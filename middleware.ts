@@ -1,9 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireRole } from '@/utils/middleware/roleGuard';
 
-export function middleware(request: NextRequest) {
-  const isLoggedIn = request.cookies.get('isLoggedIn')?.value === 'true';
-  const role = request.cookies.get('userRole')?.value; // seller, admin, superadmin
+export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+
+  // === API MIDDLEWARE SECTION ===
+  if (pathname.startsWith('/api')) {
+    const publicApiPaths = [
+      '/api/super_admin',
+      '/api/super_admin/sign-in',
+      '/api/admin/sign-in',
+      '/api/seller/sign-in',
+    ];
+
+    if (publicApiPaths.includes(pathname)) {
+      return NextResponse.next();
+    }
+
+    if (pathname.startsWith('/api/super_admin')) {
+      const auth = await requireRole(request, ['super_admin']);
+      if (auth instanceof NextResponse) return auth;
+    }
+    else if (pathname.startsWith('/api/admin')) {
+      const auth = await requireRole(request, ['admin']);
+      if (auth instanceof NextResponse) return auth;
+    }
+    else if (pathname.startsWith('/api/seller')) {
+      const auth = await requireRole(request, ['seller']);
+      if (auth instanceof NextResponse) return auth;
+    }
+
+
+    return NextResponse.next();
+  }
+
+  // === FRONTEND MIDDLEWARE SECTION ===
+  const isLoggedIn = request.cookies.get('isLoggedIn')?.value === 'true';
+  const role = request.cookies.get('userRole')?.value;
 
   const publicRoutes = [
     '/login',
@@ -20,19 +53,9 @@ export function middleware(request: NextRequest) {
   }
 
   if (isLoggedIn && isPublic) {
-    // Redirect logged-in user to their respective dashboard
-    if (role === 'seller') {
-      return NextResponse.redirect(new URL('/seller/dashboard', request.url));
-    }
-    if (role === 'admin') {
-      return NextResponse.redirect(new URL('/admin/dashboard', request.url));
-    }
-    if (role === 'superadmin') {
-      return NextResponse.redirect(new URL('/superadmin/dashboard', request.url));
-    }
+    return NextResponse.redirect(new URL(`/${role}/dashboard`, request.url));
   }
 
-  // Protect role-specific routes
   const isSellerRoute = pathname.startsWith('/seller');
   const isAdminRoute = pathname.startsWith('/admin');
   const isSuperAdminRoute = pathname.startsWith('/super-admin');
@@ -52,9 +75,9 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// ✅ Matcher config
 export const config = {
   matcher: [
-    '/((?!_next|api|static|.*\\.(?:svg|png|jpg|jpeg|webp|ico|css|js|woff2?|ttf|eot)).*)',
+    '/((?!_next|static|.*\\.(?:svg|png|jpg|jpeg|webp|ico|css|js|woff2?|ttf|eot)).*)',
+    '/api/:path*',
   ],
 };
