@@ -21,7 +21,6 @@ export async function POST(req: NextRequest) {
             subscriptionPlan,
             purchaseDate,
             expiryDate,
-            adminId,
             password,
             confirmPassword
         } = await req.json();
@@ -30,9 +29,12 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: 'Passwords do not match' }, { status: 400 });
         }
 
-        const existing = await User.findOne({ _id: adminId });
-        if (!existing) {
-            return NextResponse.json({ message: 'Admin does not exist' }, { status: 404 });
+        const existingCompany = await Company.findOne({
+            $or: [{ email }, { name }]
+        });
+
+        if (existingCompany) {
+            return NextResponse.json({ message: 'Company with the same name or email already exists' }, { status: 409 });
         }
 
         const now = new Date();

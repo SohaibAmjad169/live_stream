@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
     required: true
   },
   photo: String,
+  companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company' },
   isActive: { type: Boolean, default: true },
 }, { timestamps: true });
 
