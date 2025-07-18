@@ -14,7 +14,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [userType, setUserType] = useState("seller");
-
+  const [error, setError] = useState("");
   const router = useRouter();
 
   const togglePasswordVisibility = () => {
@@ -23,54 +23,80 @@ export default function Login() {
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
+    setError("");
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
+    setError("");
   };
 
   const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUserType(e.target.value);
+    setError("");
   };
 
-  // Dummy users
-  const users = [
-    {
-      email: "jaikumar",
-      password: "seller",
-      role: "seller",
-    },
-    {
-      email: "jaikumar",
-      password: "admin",
-      role: "admin",
-    },
-    {
-      email: "jaikumar",
-      password: "superadmin",
-      role: "superadmin",
-    },
-  ];
-
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
-      alert("Please enter email and password.");
+      setError("Please enter email and password.");
       return;
     }
 
-    const matchedUser = users.find(
-      (user) =>
-        user.email === email &&
-        user.password === password &&
-        user.role === userType
-    );
+    setError("");
 
-    if (matchedUser) {
-      Cookies.set("isLoggedIn", "true", { expires: 1 });
-      Cookies.set("userRole", userType, { expires: 1 });
-      router.push("/seller/dashboard");
-    } else {
-      alert("Invalid credentials or role.");
+    try {
+      const BASE_URL = "http://localhost:3000";
+      let apiUrl = "";
+      let redirectPath = "";
+
+      // Dynamically determine the API endpoint and redirect path based on userType
+      switch (userType) {
+        case "seller":
+          apiUrl = `${BASE_URL}/api/seller/sign-in`;
+          redirectPath = "/seller/dashboard";
+          break;
+        case "admin":
+          apiUrl = `${BASE_URL}/api/admin/sign-in`;
+          redirectPath = "/admin/dashboard";
+          break;
+        case "superadmin":
+          apiUrl = `${BASE_URL}/api/super-admin/sign-in`;
+          redirectPath = "/superadmin/dashboard";
+          break;
+        default:
+          setError("Invalid user type selected.");
+          return;
+      }
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI2ODdhMzkzYTE1NWE5MTI1OTdlZDFlOTciLCJyb2xlIjoic3VwZXJfYWRtaW4iLCJlbWFpbCI6ImpvaG5Ac3RyZWFtcHJvcy51cyIsImlhdCI6MTc1Mjg0ODI4MywiZXhwIjoxNzUzNDUzMDgzfQ.ZEFFeMyz1nKSALQHAW-zPjJAr6W33RyqNIYSW3gsRjk",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        if (data.success) {
+          Cookies.set("isLoggedIn", "true", { expires: 1 });
+          Cookies.set("userRole", userType, { expires: 1 });
+          Cookies.set("authToken", data.token, { expires: 1 });
+          router.push(redirectPath);
+        } else {
+          setError(data.message || "Login failed. Please try again.");
+        }
+      } else {
+        setError(
+          data.message || `API Error: ${response.status} ${response.statusText}`
+        );
+      }
+    } catch (err) {
+      console.error("Login API call failed:", err);
+      setError("An unexpected error occurred. Please try again later.");
     }
   };
 
@@ -155,6 +181,9 @@ export default function Login() {
           onTogglePasswordVisibility={togglePasswordVisibility}
         />
       </div>
+
+      {/* Error Message Display */}
+      {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
 
       {/* Login Button */}
       <AuthButton text="Login" onClick={handleLogin} />
