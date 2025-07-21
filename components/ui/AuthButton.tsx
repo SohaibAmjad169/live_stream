@@ -2,7 +2,8 @@ import React from "react";
 
 interface AuthButtonProps {
   text: string;
-  onClick: React.MouseEventHandler<HTMLButtonElement>;
+  disabled?: boolean;
+  onClick?: () => void;
 }
 
 const AuthButton: React.FC<AuthButtonProps> = ({ text, onClick }) => {
