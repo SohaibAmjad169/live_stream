@@ -1,8 +1,11 @@
+"use client";
 import PerformanceSummary from "@/components/ui/PerformanceSummary";
 import OverviewLineChart from "@/components/ui/OverviewLineChart";
 // import SystemUsageChart from "@/components/ui/SystemUsageChart";
 // import SubscriptionsBarChart from "@/components/ui/SubscriptionsBarChart";
 import TopCompaniesTable from "@/components/ui/TopCompaniesTable";
+import { useEffect } from "react";
+import { getDashboardData } from "@/lib/api";
 
 const stats = [
   {
@@ -44,6 +47,18 @@ const stats = [
 ];
 
 export default function SellerDashboard() {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getDashboardData();
+        console.log("Dashboard data:", data);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
   return (
     <div className="flex flex-col gap-2">
       <div className="flex justify-between items-center pb-4">

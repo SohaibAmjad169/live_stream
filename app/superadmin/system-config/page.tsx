@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Settings,
   Key,
@@ -11,6 +11,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import InviteCodesModal from "@/components/ui/InviteCodesModal";
+import { getConfig, updateConfig } from "@/lib/api"; // Make sure updateConfig exists
 
 // TextInput Component
 interface TextInputProps {
@@ -171,6 +172,95 @@ export default function SystemConfigurationPage() {
 
   const updateFormData = (key: string, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
+  };
+
+  // Fetch config and populate form
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const apiResponse = await getConfig();
+        const config = apiResponse.config;
+        if (config) {
+          setFormData({
+            defaultExpiration:
+              config.inviteCodeSettings?.defaultExpirationDays?.toString() ||
+              "7",
+            maxUsage:
+              config.inviteCodeSettings?.maxUsagePerCode?.toString() || "5",
+            prefixRules: config.inviteCodeSettings?.prefixRule || "",
+            inviteFormat: "", // Not present in API, set as needed
+            planA: config.subscriptionPlans?.planA?.toString() || "2",
+            planB: config.subscriptionPlans?.planB?.toString() || "5",
+            planC: config.subscriptionPlans?.planC?.toString() || "25",
+            trialDuration:
+              config.subscriptionPlans?.freeTrialDays?.toString() || "15",
+            fromAddress: config.emailSettings?.defaultFrom || "",
+            passwordReset: config.emailSettings?.passwordResetEmailEnabled
+              ? "Enabled"
+              : "Disabled",
+            logRetention:
+              config.loggingAndSecurity?.logRetentionDays?.toString() || "90",
+          });
+          setAutoEnable(!!config.inviteCodeSettings?.autoExpireAfterUse);
+          setInvitationEmail(!!config.emailSettings?.sendInvitationEmail);
+          setApprovalNotification(
+            !!config.emailSettings?.sendApprovalRejection
+          );
+          setPayrollAlert(!!config.emailSettings?.sendPayrollAlerts);
+          setSelfRegistration(!!config.systemToggles?.allowSelfRegistration);
+          setHistoricalAccess(!!config.systemToggles?.historicalPayrollAccess);
+          setProbabilityView(!!config.systemToggles?.sellerProfitabilityView);
+          setLockInventory(!!config.systemToggles?.lockInventoryDuringPayroll);
+          setForce2FA(!!config.loggingAndSecurity?.force2FAForSuperAdmins);
+        }
+      } catch (error) {
+        console.error("Error fetching config:", error);
+      }
+    };
+
+    fetchConfig();
+  }, []);
+
+  // Save config handler
+  const handleSave = async () => {
+    try {
+      await updateConfig({
+        inviteCodeSettings: {
+          defaultExpirationDays: Number(formData.defaultExpiration),
+          maxUsagePerCode: Number(formData.maxUsage),
+          prefixRule: formData.prefixRules,
+          codeLength: 10, // Set as needed
+          autoExpireAfterUse: autoEnable,
+        },
+        subscriptionPlans: {
+          planA: Number(formData.planA),
+          planB: Number(formData.planB),
+          planC: Number(formData.planC),
+          freeTrialDays: Number(formData.trialDuration),
+        },
+        emailSettings: {
+          defaultFrom: formData.fromAddress,
+          passwordResetEmailEnabled: formData.passwordReset === "Enabled",
+          sendInvitationEmail: invitationEmail,
+          sendApprovalRejection: approvalNotification,
+          sendPayrollAlerts: payrollAlert,
+        },
+        systemToggles: {
+          allowSelfRegistration: selfRegistration,
+          historicalPayrollAccess: historicalAccess,
+          sellerProfitabilityView: probabilityView,
+          lockInventoryDuringPayroll: lockInventory,
+        },
+        loggingAndSecurity: {
+          logRetentionDays: Number(formData.logRetention),
+          force2FAForSuperAdmins: force2FA,
+        },
+      });
+      // Optionally show a success message here
+    } catch (error: any) {
+      console.error("Error saving config:", error.message || error);
+      alert("Failed to save configuration: " + (error.message || error));
+    }
   };
 
   return (
@@ -403,7 +493,10 @@ export default function SystemConfigurationPage() {
             <button className="bg-[#F9FAFB] hover:bg-[#FFFFFF] text-[#000000] px-8 py-3 rounded-lg font-semibold transition-colors border border-[#C3D3E2]">
               Cancel
             </button>
-            <button className="bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-[#FFFFFF] px-8 py-3 rounded-lg font-semibold transition-colors shadow-sm">
+            <button
+              className="bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-[#FFFFFF] px-8 py-3 rounded-lg font-semibold transition-colors shadow-sm"
+              onClick={handleSave}
+            >
               Save Configuration
             </button>
           </div>
