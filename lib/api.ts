@@ -65,6 +65,8 @@ export const fetchCompanyByIdApi = async (companyId: string): Promise<any> => {
   }
 
   const apiUrl = `${BASE_URL}/api/super-admin/company?company_id=${companyId}`;
+  console.log("apiUrl in fetchCompanyByIdApi:", apiUrl);
+
   const response = await fetch(apiUrl, {
     method: "GET",
     headers: {
@@ -76,7 +78,9 @@ export const fetchCompanyByIdApi = async (companyId: string): Promise<any> => {
   if (!response.ok) {
     await handleApiError(response);
   }
-  return response.json();
+  const responseData = await response.json();
+  console.log("Response status in fetchCompanyByIdApi:", responseData);
+  return responseData;
 };
 
 export const updateCompanyDetailsApi = async (
@@ -128,6 +132,7 @@ export const updateCompanyStatusApi = async (
   }
   return response.json();
 };
+
 
 export const getConfig = async (): Promise<any> => {
   const authToken = getAuthToken();
@@ -198,3 +203,5 @@ export const getDashboardData = async (): Promise<any> => {
 
   return response.json();
 };
+
+

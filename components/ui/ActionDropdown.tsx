@@ -1,80 +1,77 @@
 "use client";
+
 import { useState, useRef, useEffect } from "react";
-import ReactDOM from "react-dom";
+import { MoreVertical } from "lucide-react";
 
 interface ActionDropdownProps {
   items: string[];
-  onSelect?: (item: string) => void;
+  onSelect: (action: string) => void;
 }
 
-export default function ActionDropdown({ items, onSelect }: ActionDropdownProps) {
-  const [open, setOpen] = useState(false);
-  const [position, setPosition] = useState({ top: 0, left: 0 });
-
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null); // ✅ new ref for dropdown
+export default function ActionDropdown({
+  items,
+  onSelect,
+}: ActionDropdownProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        !buttonRef.current?.contains(event.target as Node) &&
-        !menuRef.current?.contains(event.target as Node)
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
       ) {
-        setOpen(false);
+        setIsOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
-  useEffect(() => {
-    if (open && buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      setPosition({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX - 150, // adjust for width
-      });
-    }
-  }, [open]);
+  const handleItemClick = (item: string) => {
+    onSelect(item);
+    setIsOpen(false);
+  };
 
   return (
-    <>
-      <button
-        ref={buttonRef}
-        onClick={() => setOpen((prev) => !prev)}
-        className="text-xl font-bold px-2 focus:outline-none"
-      >
-        ...
-      </button>
+    <div className="relative inline-block text-left" ref={dropdownRef}>
+      <div>
+        <button
+          type="button"
+          className="inline-flex justify-center items-center p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          id="menu-button"
+          aria-expanded="true"
+          aria-haspopup="true"
+          onClick={() => setIsOpen(!isOpen)}
+          aria-label="More actions"
+        >
+          <MoreVertical size={20} />
+        </button>
+      </div>
 
-      {open &&
-        ReactDOM.createPortal(
-          <div
-            ref={menuRef} // ✅ bind the ref here
-            className="absolute w-45 border-[#C3D3E2] bg-white shadow-lg z-[9999]"
-            style={{
-              top: `${position.top}px`,
-              left: `${position.left}px`,
-              position: "absolute",
-            }}
-          >
-            <ul className="divide-y text-base">
-              {items.map((label, idx) => (
-                <li
-                  key={idx}
-                  onClick={() => {
-                    onSelect?.(label);
-                    setOpen(false);
-                  }}
-                  className="px-4 py-3 bg-white hover:bg-[#00000006] border-[#C3D3E2] cursor-pointer"
-                >
-                  {label}
-                </li>
-              ))}
-            </ul>
-          </div>,
-          document.body
-        )}
-    </>
+      {isOpen && (
+        <div
+          className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-20"
+          role="menu"
+          aria-orientation="vertical"
+          aria-labelledby="menu-button"
+        >
+          <div className="py-1" role="none">
+            {items.map((item) => (
+              <button
+                key={item}
+                onClick={() => handleItemClick(item)}
+                className="text-gray-700 block px-4 py-2 text-sm w-full text-left hover:bg-gray-100"
+                role="menuitem"
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

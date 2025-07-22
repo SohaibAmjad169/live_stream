@@ -11,9 +11,15 @@ interface Props {
   onClose: () => void;
   user: UserRow | null;
   onSave: (updated: UserRow) => void;
+  isLoading?: boolean;
 }
 
-export default function EditUserModal({ isOpen, onClose, user, onSave }: Props) {
+export default function EditUserModal({
+  isOpen,
+  onClose,
+  user,
+  onSave,
+}: Props) {
   const [formData, setFormData] = useState<UserRow>({
     id: "",
     name: "",
@@ -57,7 +63,9 @@ export default function EditUserModal({ isOpen, onClose, user, onSave }: Props) 
             <X size={16} />
           </button>
 
-          <h2 className="text-[#0B0B58] text-lg font-bold mb-6">Edit User Info</h2>
+          <h2 className="text-[#0B0B58] text-lg font-bold mb-6">
+            Edit User Info
+          </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             <TextInput
