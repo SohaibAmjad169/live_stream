@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react"; 
+import { Download, X } from "lucide-react"; 
 
 interface StatItem {
   bg: string;
@@ -9,6 +11,7 @@ interface StatItem {
   amount: string;
   label: string;
   changeColor: string;
+  change?: string; 
 }
 
 interface PerformanceSummaryProps {
@@ -16,6 +19,7 @@ interface PerformanceSummaryProps {
   subtitle?: string;
   stats: StatItem[];
   showExport?: boolean;
+  onExport?: (format: string) => void; 
 }
 
 export default function PerformanceSummary({
@@ -23,7 +27,17 @@ export default function PerformanceSummary({
   subtitle = "Summary of this pay period",
   stats,
   showExport = true,
+  onExport, 
 }: PerformanceSummaryProps) {
+  const [showExportDropdown, setShowExportDropdown] = useState(false); 
+
+  const handleExportClick = (format: string) => {
+    if (onExport) {
+      onExport(format);
+    }
+    setShowExportDropdown(false); 
+  };
+
   return (
     <div className="flex flex-col justify-between h-full rounded-[20px] border bg-white border-[#F8F9FA] shadow-[0px_4px_20px_0px_#EEEEEE80] p-4 space-y-6 w-full">
       {/* Header */}
@@ -33,10 +47,31 @@ export default function PerformanceSummary({
           <p className="text-[#737791] text-sm mt-1">{subtitle}</p>
         </div>
         {showExport && (
-          <button className="flex items-center gap-2 border border-[#E0E0E0] px-4 py-2 rounded-lg text-sm text-[#05004E] font-medium hover:bg-[#F5F6FA] transition">
-            <Image src="/export.svg" alt="Export" width={16} height={16} />
-            Export
-          </button>
+          <div className="relative"> {/* Added relative positioning for dropdown */}
+            <button
+              onClick={() => setShowExportDropdown(!showExportDropdown)}
+              className="flex items-center gap-2 border border-[#E0E0E0] px-4 py-2 rounded-lg text-sm text-[#05004E] font-medium hover:bg-[#F5F6FA] transition"
+            >
+              <Download size={16} /> {/* Using Lucide icon */}
+              Export
+            </button>
+            {showExportDropdown && (
+              <div className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg py-1 z-10">
+                <button 
+                  onClick={() => handleExportClick("PDF")}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  PDF
+                </button>
+                <button 
+                  onClick={() => handleExportClick("CSV")}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  CSV
+                </button>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
@@ -60,6 +95,12 @@ export default function PerformanceSummary({
               </div>
             </div>
             <div className="text-[#05004E] text-sm">{item.label}</div>
+            {/* Display change only if it exists */}
+            {item.change && (
+              <div className="text-xs font-semibold mt-1" style={{ color: item.changeColor }}>
+                {item.change}
+              </div>
+            )}
           </div>
         ))}
       </div>
