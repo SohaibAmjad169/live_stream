@@ -176,6 +176,7 @@ export default function SystemConfigurationPage() {
 
   // Fetch config and populate form
   useEffect(() => {
+    // Fetch configuration from API
     const fetchConfig = async () => {
       try {
         const apiResponse = await getConfig();
