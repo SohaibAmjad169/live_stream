@@ -36,10 +36,78 @@ const usersColumns = [
 ];
 
 export default function Users() {
+
+  const [rows, setRows] = useState<UserRow[]>([
+    {
+      id: "1",
+      name: "John Vides",
+      company: "Tech Sales",
+      role: "Seller",
+      email: "techsale@gmail.com",
+      joinedOn: "12/6/24",
+      status: "In-Active",
+      lastLogin: "12/6/24 at 6:16 pm",
+      dropdownActions: ["View details", "Edit Details", "Reset Password"],
+      password: "password123",
+      plan: "Plan A (1 admin+2 Sellers)",
+      purchaseDate: "27/10/2024",
+      expiryDate: "27/11/2024",
+    },
+    {
+      id: "2",
+      name: "Henry Back",
+      company: "AB Streamer",
+      role: "Company Admin",
+      email: "AB@gmail.com",
+      joinedOn: "12/5/22",
+      status: "Active",
+      lastLogin: "2/6/24 at 8:15 pm",
+      dropdownActions: ["View details", "Edit Details", "Reset Password"],
+      password: "********",
+      plan: "Plan B",
+      purchaseDate: "15/10/2024",
+      expiryDate: "15/11/2024",
+    },
+    // 20 more entries
+    ...Array.from({ length: 40 }, (_, i) => {
+      const index = i + 3;
+      return {
+        id: index.toString(),
+        name: `User ${index}`,
+        company: `Company ${index}`,
+        role: index % 2 === 0 ? "Seller" : "Company Admin",
+        email: `user${index}@email.com`,
+        joinedOn: `01/${String(index).padStart(2, "0")}/24`,
+        status: (index % 3 === 0 ? "In-Active" : "Active") as
+          | "Active"
+          | "In-Active",
+        lastLogin: `02/${String(index).padStart(2, "0")}/24 at ${
+          8 + (index % 12)
+        }:00 pm`,
+        dropdownActions: ["View details", "Edit Details", "Reset Password"],
+        password: "********",
+        plan: `Plan ${String.fromCharCode(65 + (index % 3))}`,
+        purchaseDate: `10/${String(index).padStart(2, "0")}/2024`,
+        expiryDate: `11/${String(index).padStart(2, "0")}/2024`,
+      };
+    }),
+  ]);
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const pageSize = 15;
+  const totalPages = Math.ceil(rows.length / pageSize);
+  const paginatedRows = rows.slice(
+    currentPage * pageSize,
+    currentPage * pageSize + pageSize
+  );
+
+  const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
+
   const queryClient = useQueryClient();
 
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedUserForModal, setSelectedUserForModal] = useState<UserRow | null>(null); 
+
 
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -153,6 +221,26 @@ export default function Users() {
     }
   };
 
+
+  const handleStatusChange = (
+    id: string,
+    newStatus: "Active" | "In-Active"
+  ) => {
+    setRows((prev) =>
+      prev.map((u) => (u.id === id ? { ...u, status: newStatus } : u))
+    );
+    setSelectedUser((prev) =>
+      prev?.id === id ? { ...prev, status: newStatus } : prev
+    );
+  };
+
+  const handleSaveUser = (updated: UserRow) => {
+    setRows((prev) =>
+      prev.map((u) => (u.id === updated.id ? { ...u, ...updated } : u))
+    );
+    setSelectedUser((prev) =>
+      prev?.id === updated.id ? { ...updated } : prev
+
   const handleStatusChange = (id: string, newStatus: "Active" | "In-Active") => {
     updateUserStatusMutation(
       { userId: id, newStatus },
@@ -187,6 +275,7 @@ export default function Users() {
           alert(`Failed to save user: ${error.message || "Unknown error"}`);
         },
       }
+
     );
   };
 
@@ -488,4 +577,3 @@ export default function Users() {
       />
     </div>
   );
-}

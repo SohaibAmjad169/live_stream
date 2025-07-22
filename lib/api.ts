@@ -132,3 +132,76 @@ export const updateCompanyStatusApi = async (
   }
   return response.json();
 };
+
+
+export const getConfig = async (): Promise<any> => {
+  const authToken = getAuthToken();
+  console.log("Auth token:", authToken);
+  if (!authToken) {
+    throw new Error("Authentication token not found. Please log in.");
+  }
+
+  const apiUrl = `${BASE_URL}/api/super-admin/system-config`;
+
+  const response = await fetch(apiUrl, {
+    headers: {
+      Authorization: `Bearer ${authToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("API error response:", errorText);
+    await handleApiError(response);
+  }
+
+  return response.json();
+};
+
+export const updateConfig = async (configData: any): Promise<any> => {
+  const authToken = getAuthToken();
+  if (!authToken) {
+    throw new Error("Authentication token not found. Please log in.");
+  }
+
+  const apiUrl = `${BASE_URL}/api/super-admin/system-config`;
+
+  const response = await fetch(apiUrl, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${authToken}`,
+    },
+    body: JSON.stringify(configData),
+    redirect: "follow",
+  });
+
+  if (!response.ok) {
+    await handleApiError(response);
+  }
+
+  return response.json();
+};
+
+// get Dashboard Data without auth token
+
+export const getDashboardData = async (): Promise<any> => {
+  const apiUrl = `${BASE_URL}/api/super-admin/dashboard`;
+
+  const response = await fetch(apiUrl, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("API Error Response:", errorText);
+    await handleApiError(response);
+  }
+
+  return response.json();
+};
+
+

@@ -186,7 +186,6 @@ export default function SellerDashboard() {
     return (
       <div className="flex flex-col justify-center items-center h-screen text-red-600 text-lg font-semibold">
         Error loading dashboard: {error.message}
-        {/* You might want a retry button here if appropriate */}
       </div>
     );
   }
@@ -228,7 +227,6 @@ export default function SellerDashboard() {
           </div>
         </div>
       </div>
-      {/* Ensure TopCompaniesTable accepts a 'companies' prop of type { id: string; name: string; revenue: number; }[] */}
       <TopCompaniesTable companies={topCompaniesData} />
     </div>
   );
