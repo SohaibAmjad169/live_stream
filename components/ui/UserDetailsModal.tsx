@@ -11,6 +11,7 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   user: UserRow | null;
+  isLoading?: boolean;
   onStatusChange: (id: string, status: "Active" | "In-Active") => void;
 }
 
@@ -71,19 +72,61 @@ export default function UserDetailsModal({
           {/* General Info */}
           <p className="font-semibold text-[#0B0B58] mb-2">General Info</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-            <TextInput label="Name" value={user.name} onChange={() => {}} disabled />
-            <TextInput label="Email" value={user.email} onChange={() => {}} disabled />
-            <TextInput label="Password" value={user.password ?? ""} onChange={() => {}} disabled />
-            <TextInput label="Company" value={user.company} onChange={() => {}} disabled />
-            <TextInput label="Role" value={user.role} onChange={() => {}} disabled />
+            <TextInput
+              label="Name"
+              value={user.name}
+              onChange={() => {}}
+              disabled
+            />
+            <TextInput
+              label="Email"
+              value={user.email}
+              onChange={() => {}}
+              disabled
+            />
+            <TextInput
+              label="Password"
+              value={user.password ?? ""}
+              onChange={() => {}}
+              disabled
+            />
+            <TextInput
+              label="Company"
+              value={user.company}
+              onChange={() => {}}
+              disabled
+            />
+            <TextInput
+              label="Role"
+              value={user.role}
+              onChange={() => {}}
+              disabled
+            />
           </div>
 
           {/* Subscription Info */}
-          <p className="font-semibold text-[#0B0B58] mb-2">Company&apos;s Subscription details</p>
+          <p className="font-semibold text-[#0B0B58] mb-2">
+            Company&apos;s Subscription details
+          </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-            <TextInput label="Current Plan" value={user.plan ?? ""} onChange={() => {}} disabled />
-            <TextInput label="Purchase Date" value={user.purchaseDate ?? ""} onChange={() => {}} disabled />
-            <TextInput label="Expiring on" value={user.expiryDate ?? ""} onChange={() => {}} disabled />
+            <TextInput
+              label="Current Plan"
+              value={user.plan ?? ""}
+              onChange={() => {}}
+              disabled
+            />
+            <TextInput
+              label="Purchase Date"
+              value={user.purchaseDate ?? ""}
+              onChange={() => {}}
+              disabled
+            />
+            <TextInput
+              label="Expiring on"
+              value={user.expiryDate ?? ""}
+              onChange={() => {}}
+              disabled
+            />
           </div>
 
           <div className="flex justify-center pt-6">
