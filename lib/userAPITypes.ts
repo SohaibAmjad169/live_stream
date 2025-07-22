@@ -84,3 +84,28 @@ export interface CompaniesApiResponse {
   message: string;
   companies: Company[];
 }
+export interface DashboardStats {
+  totalRevenueTracked: number;
+  activeCompanies: number;
+  activeUsers: number;
+  subscriptionRevenue: number;
+}
+
+export interface DashboardChartData {
+  name: string;
+  [key: string]: number | string; // e.g., "Jan", "Plan A": 250
+}
+
+export interface TopCompany {
+  _id: string;
+  name: string;
+  revenue: number;
+}
+
+export interface DashboardApiResponse {
+  success: boolean;
+  message: string;
+  stats: DashboardStats;
+  revenueChartData: DashboardChartData[];
+  topCompanies: TopCompany[];
+}
