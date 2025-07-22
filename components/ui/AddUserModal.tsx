@@ -30,8 +30,8 @@ export default function AddUserModal({ isOpen, onClose, onAdd }: Props) {
     isLoading: isLoadingCompanies,
     error: companiesError,
   } = useCompanies();
-  const companies = companiesData?.companies || [];
-
+  const companies = companiesData || [];
+  console.log("Companies Data:", companies);
   const [form, setForm] = useState<UserFormData>({
     name: "",
     email: "",
@@ -48,7 +48,7 @@ export default function AddUserModal({ isOpen, onClose, onAdd }: Props) {
   // Set default company if companies load and none is selected
   useEffect(() => {
     if (companies.length > 0 && !form.companyId) {
-      setForm((prev) => ({ ...prev, companyId: companies[0]._id }));
+      setForm((prev: any) => ({ ...prev, companyId: companies[0]._id }));
     }
   }, [companies, form.companyId]);
 
@@ -148,7 +148,7 @@ export default function AddUserModal({ isOpen, onClose, onAdd }: Props) {
                     className="appearance-none cursor-pointer w-full border border-[#C3D3E2] bg-[#F9FAFB] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select a company</option>
-                    {companies.map((company) => (
+                    {companies.map((company: { _id: string; name: string }) => (
                       <option key={company._id} value={company._id}>
                         {company.name}
                       </option>

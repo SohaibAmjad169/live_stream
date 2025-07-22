@@ -18,6 +18,7 @@ export interface ApiUser {
 }
 
 export interface UserRow {
+  [key: string]: unknown;
   id: string;
   name: string;
   email: string;
@@ -53,7 +54,7 @@ export interface UpdateUserPayload {
   name?: string;
   email?: string;
   password?: string;
-  companyId?: string; 
+  companyId?: string;
   role?: string;
   phone?: string;
   address?: string;
@@ -72,12 +73,10 @@ export interface ApiResponse {
   totalCount?: number;
 }
 
-
 export interface Company {
   _id: string;
   name: string;
 }
-
 
 export interface CompaniesApiResponse {
   success: boolean;

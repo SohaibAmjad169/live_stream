@@ -20,6 +20,7 @@ interface DataTableCardProps<T extends Record<string, unknown>> {
   enableActions?: boolean;
   onActionClick?: (row: T, action: string) => void;
   striped?: boolean; // ✅ new prop
+  isLoading?: boolean;
 }
 
 export default function DataTableCard<T extends Record<string, unknown>>({
@@ -51,10 +52,7 @@ export default function DataTableCard<T extends Record<string, unknown>>({
           <thead>
             <tr className="text-left text-[#1E3A8A] text-xs sm:text-sm border-b border-[#F2F3F9]">
               {columns.map((col) => (
-                <th
-                  key={col.key}
-                  className="pb-2  sm:pb-3 whitespace-nowrap"
-                >
+                <th key={col.key} className="pb-2  sm:pb-3 whitespace-nowrap">
                   {col.label.toUpperCase()}
                 </th>
               ))}
