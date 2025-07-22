@@ -38,7 +38,7 @@ export default function EditUserModal({
   }, [user]);
 
   const handleChange = (field: keyof UserRow, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev: any) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = () => {

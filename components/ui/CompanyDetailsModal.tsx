@@ -12,6 +12,7 @@ interface Props {
   onClose: () => void;
   company: CompanyRow | null;
   onStatusChange: (email: string, status: "Active" | "In-Active") => void;
+  isLoading: boolean;
 }
 
 export default function CompanyDetailsModal({

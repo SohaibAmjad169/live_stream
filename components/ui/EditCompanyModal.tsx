@@ -4,21 +4,21 @@ import { useState, useEffect } from "react";
 import { X, ChevronDown } from "lucide-react";
 import TextInput from "@/components/ui/TextInput";
 import SuccessModal from "./SuccessModal";
-import { UserRow, UpdateUserPayload } from "@/app/../lib/userAPITypes"; 
-import { useCompanies } from "@/hooks/companies/useCompanies"; 
+import { UserRow, UpdateUserPayload } from "@/app/../lib/userAPITypes";
+import { useCompanies } from "@/hooks/companies/useCompanies";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   user: UserRow | null;
-  onSave: (updated: UpdateUserPayload & { userId: string }) => void; 
+  onSave: (updated: UpdateUserPayload & { userId: string }) => void;
 }
 
 type UserFormData = {
   id: string;
   name: string;
   email: string;
-  companyId: string; 
+  companyId: any;
   role: string;
   phone?: string;
   address?: string;
@@ -29,15 +29,24 @@ type UserFormData = {
   status: "Active" | "In-Active";
 };
 
-export default function EditUserModal({ isOpen, onClose, user, onSave }: Props) {
-  const { data: companiesData, isLoading: isLoadingCompanies, error: companiesError } = useCompanies();
-  const companies = companiesData?.company || [];
+export default function EditUserModal({
+  isOpen,
+  onClose,
+  user,
+  onSave,
+}: Props) {
+  const {
+    data: companiesData,
+    isLoading: isLoadingCompanies,
+    error: companiesError,
+  } = useCompanies();
+  const companies = companiesData || [];
 
   const [formData, setFormData] = useState<UserFormData>({
     id: "",
     name: "",
     email: "",
-    companyId: "", 
+    companyId: "",
     role: "",
     status: "Active",
     phone: "",
@@ -52,12 +61,14 @@ export default function EditUserModal({ isOpen, onClose, user, onSave }: Props) 
 
   useEffect(() => {
     if (user) {
-      const initialCompanyId = companies.find(c => c.name === user.company)?._id || "";
+      companies.find(
+        (c: { _id: string; name: string }) => c.name === user.company
+      )?._id || "";
       setFormData({
         id: user.id,
         name: user.name,
         email: user.email,
-        companyId: initialCompanyId, 
+        companyId: user.initialCompanyId,
         role: user.role,
         status: user.status,
         phone: user.phone || "",
@@ -68,7 +79,7 @@ export default function EditUserModal({ isOpen, onClose, user, onSave }: Props) 
         expiryDate: user.expiryDate || "",
       });
     }
-  }, [user, companies]); 
+  }, [user, companies]);
 
   const handleChange = (field: keyof UserFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -81,22 +92,22 @@ export default function EditUserModal({ isOpen, onClose, user, onSave }: Props) 
     }
 
     const updatedPayload: UpdateUserPayload & { userId: string } = {
-      userId: formData.id, 
+      userId: formData.id,
       name: formData.name,
       email: formData.email,
-      companyId: formData.companyId, 
+      companyId: formData.companyId,
       role: formData.role,
-    
+
       ...(formData.phone && { phone: formData.phone }),
       ...(formData.address && { address: formData.address }),
       ...(formData.website && { website: formData.website }),
       ...(formData.plan && { subscriptionPlan: formData.plan }),
       ...(formData.purchaseDate && { purchaseDate: formData.purchaseDate }),
       ...(formData.expiryDate && { expiryDate: formData.expiryDate }),
-      isActive: formData.status === "Active", 
+      isActive: formData.status === "Active",
     };
 
-    onSave(updatedPayload); 
+    onSave(updatedPayload);
     setShowSuccess(true);
     setTimeout(() => {
       setShowSuccess(false);
@@ -117,7 +128,9 @@ export default function EditUserModal({ isOpen, onClose, user, onSave }: Props) 
             <X size={16} />
           </button>
 
-          <h2 className="text-[#0B0B58] text-lg font-bold mb-6">Edit User Info</h2>
+          <h2 className="text-[#0B0B58] text-lg font-bold mb-6">
+            Edit User Info
+          </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             <TextInput
@@ -130,13 +143,17 @@ export default function EditUserModal({ isOpen, onClose, user, onSave }: Props) 
               value={formData.email}
               onChange={(e) => handleChange("email", e.target.value)}
             />
-            
+
             <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-700 mb-2">Company</label>
+              <label className="text-sm font-medium text-gray-700 mb-2">
+                Company
+              </label>
               {isLoadingCompanies ? (
                 <div className="text-gray-500">Loading companies...</div>
               ) : companiesError ? (
-                <div className="text-red-500">Error loading companies: {companiesError.message}</div>
+                <div className="text-red-500">
+                  Error loading companies: {companiesError.message}
+                </div>
               ) : (
                 <div className="relative">
                   <select
@@ -145,7 +162,7 @@ export default function EditUserModal({ isOpen, onClose, user, onSave }: Props) 
                     className="appearance-none cursor-pointer w-full border border-[#C3D3E2] bg-[#F9FAFB] rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select a company</option>
-                    {companies.map((company) => (
+                    {companies.map((company: any) => (
                       <option key={company._id} value={company._id}>
                         {company.name}
                       </option>
@@ -183,7 +200,9 @@ export default function EditUserModal({ isOpen, onClose, user, onSave }: Props) 
               onChange={(e) => handleChange("plan", e.target.value)}
             />
             <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-700 mb-2">Purchase Date</label>
+              <label className="text-sm font-medium text-gray-700 mb-2">
+                Purchase Date
+              </label>
               <input
                 type="date"
                 value={formData.purchaseDate || ""}
@@ -193,7 +212,9 @@ export default function EditUserModal({ isOpen, onClose, user, onSave }: Props) 
             </div>
 
             <div className="flex flex-col">
-              <label className="text-sm font-medium text-gray-700 mb-2">Expiry Date</label>
+              <label className="text-sm font-medium text-gray-700 mb-2">
+                Expiry Date
+              </label>
               <input
                 type="date"
                 value={formData.expiryDate || ""}
