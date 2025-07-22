@@ -113,8 +113,7 @@ export default function Login() {
             type="email"
             placeholder="Enter your email"
             value={email}
-            onChange={handleEmailChange}
-          />
+            onChange={handleEmailChange} label={""} name={""}          />
         </div>
 
         {/* Password Input */}
@@ -132,8 +131,7 @@ export default function Login() {
             value={password}
             onChange={handlePasswordChange}
             showPasswordToggle={true}
-            onTogglePasswordVisibility={togglePasswordVisibility}
-          />
+            onTogglePasswordVisibility={togglePasswordVisibility} label={""} name={""}          />
         </div>
 
         {/* Error Message Display */}
