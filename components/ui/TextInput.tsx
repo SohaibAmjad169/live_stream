@@ -3,6 +3,7 @@
 import { LucideIcon } from "lucide-react";
 
 interface TextInputProps {
+  id?: string; // optional enhancement
   label: string;
   placeholder?: string;
   value: string; // must be string only

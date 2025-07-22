@@ -44,7 +44,10 @@ export default function UsersFooter({
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setDropdownOpen(false);
       }
     };
@@ -109,7 +112,11 @@ export default function UsersFooter({
           {dropdownOpen ? (
             <ChevronUp strokeWidth={2.5} size={18} className="text-gray-600" />
           ) : (
-            <ChevronDown strokeWidth={2.5} size={18} className="text-gray-600" />
+            <ChevronDown
+              strokeWidth={2.5}
+              size={18}
+              className="text-gray-600"
+            />
           )}
         </button>
 

@@ -1,19 +1,19 @@
 import Cookies from "js-cookie";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
-
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
 
 export const getAuthToken = (): string | null => {
   const token = Cookies.get("authToken");
-  return token || null; 
+  return token || null;
 };
-
 
 export const handleApiError = async (response: Response) => {
   const errorData = await response.json();
-  throw new Error(errorData.message || `API Error: ${response.status} ${response.statusText}`);
+  throw new Error(
+    errorData.message || `API Error: ${response.status} ${response.statusText}`
+  );
 };
-
 
 export const fetchAllCompaniesApi = async (): Promise<any> => {
   const authToken = getAuthToken();
@@ -26,7 +26,7 @@ export const fetchAllCompaniesApi = async (): Promise<any> => {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${authToken}`,
+      Authorization: `Bearer ${authToken}`,
     },
   });
 
@@ -35,7 +35,6 @@ export const fetchAllCompaniesApi = async (): Promise<any> => {
   }
   return response.json();
 };
-
 
 export const createCompanyApi = async (newCompanyData: any): Promise<any> => {
   const authToken = getAuthToken();
@@ -48,7 +47,7 @@ export const createCompanyApi = async (newCompanyData: any): Promise<any> => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${authToken}`,
+      Authorization: `Bearer ${authToken}`,
     },
     body: JSON.stringify(newCompanyData),
   });
@@ -66,21 +65,28 @@ export const fetchCompanyByIdApi = async (companyId: string): Promise<any> => {
   }
 
   const apiUrl = `${BASE_URL}/api/super-admin/company?company_id=${companyId}`;
+  console.log("apiUrl in fetchCompanyByIdApi:", apiUrl);
+
   const response = await fetch(apiUrl, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${authToken}`,
+      Authorization: `Bearer ${authToken}`,
     },
   });
 
   if (!response.ok) {
     await handleApiError(response);
   }
-  return response.json();
+  const responseData = await response.json();
+  console.log("Response status in fetchCompanyByIdApi:", responseData);
+  return responseData;
 };
 
-export const updateCompanyDetailsApi = async (companyId: string, updatedData: Partial<any>): Promise<any> => {
+export const updateCompanyDetailsApi = async (
+  companyId: string,
+  updatedData: Partial<any>
+): Promise<any> => {
   const authToken = getAuthToken();
   if (!authToken) {
     throw new Error("Authentication token not found. Please log in.");
@@ -91,9 +97,9 @@ export const updateCompanyDetailsApi = async (companyId: string, updatedData: Pa
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${authToken}`,
+      Authorization: `Bearer ${authToken}`,
     },
-    body: JSON.stringify(updatedData), 
+    body: JSON.stringify(updatedData),
   });
 
   if (!response.ok) {
@@ -102,8 +108,10 @@ export const updateCompanyDetailsApi = async (companyId: string, updatedData: Pa
   return response.json();
 };
 
-
-export const updateCompanyStatusApi = async (companyId: string, isActive: boolean): Promise<any> => {
+export const updateCompanyStatusApi = async (
+  companyId: string,
+  isActive: boolean
+): Promise<any> => {
   const authToken = getAuthToken();
   if (!authToken) {
     throw new Error("Authentication token not found. Please log in.");
@@ -114,7 +122,7 @@ export const updateCompanyStatusApi = async (companyId: string, isActive: boolea
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${authToken}`,
+      Authorization: `Bearer ${authToken}`,
     },
     body: JSON.stringify({ isActive }),
   });

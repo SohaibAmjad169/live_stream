@@ -7,7 +7,6 @@ import DeactivateCompanyConfirmModal from "./DeactivateCompanyConfirmModal";
 import SuccessModal from "./SuccessModal"; // ✅ Reusable success modal
 import { CompanyRow } from "@/app/superadmin/companies/page";
 
-
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -72,19 +71,61 @@ export default function CompanyDetailsModal({
           {/* General Info */}
           <p className="font-semibold text-[#0B0B58] mb-2">General Info</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-            <TextInput label="Company Name" value={company.name} onChange={() => {}} disabled />
-            <TextInput label="Email" value={company.email} onChange={() => {}} disabled />
-            <TextInput label="Phone Num" value={company.phone ?? ""} onChange={() => {}} disabled />
-            <TextInput label="Address" value={company.address ?? ""} onChange={() => {}} disabled />
-            <TextInput label="Website" value={company.website ?? ""} onChange={() => {}} disabled />
+            <TextInput
+              label="Company Name"
+              value={company.name}
+              onChange={() => {}}
+              disabled
+            />
+            <TextInput
+              label="Email"
+              value={company.email}
+              onChange={() => {}}
+              disabled
+            />
+            <TextInput
+              label="Phone Num"
+              value={company.phone ?? ""}
+              onChange={() => {}}
+              disabled
+            />
+            <TextInput
+              label="Address"
+              value={company.address ?? ""}
+              onChange={() => {}}
+              disabled
+            />
+            <TextInput
+              label="Website"
+              value={company.website ?? ""}
+              onChange={() => {}}
+              disabled
+            />
           </div>
 
           {/* Subscription Info */}
-          <p className="font-semibold text-[#0B0B58] mb-2">Subscription details</p>
+          <p className="font-semibold text-[#0B0B58] mb-2">
+            Subscription details
+          </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-            <TextInput label="Current Plan" value={company.plan} onChange={() => {}} disabled />
-            <TextInput label="Purchase Date" value={company.purchaseDate ?? ""} onChange={() => {}} disabled />
-            <TextInput label="Expiring on" value={company.expiryDate ?? ""} onChange={() => {}} disabled />
+            <TextInput
+              label="Current Plan"
+              value={company.plan}
+              onChange={() => {}}
+              disabled
+            />
+            <TextInput
+              label="Purchase Date"
+              value={company.purchaseDate ?? ""}
+              onChange={() => {}}
+              disabled
+            />
+            <TextInput
+              label="Expiring on"
+              value={company.expiryDate ?? ""}
+              onChange={() => {}}
+              disabled
+            />
           </div>
 
           {/* Action Button */}

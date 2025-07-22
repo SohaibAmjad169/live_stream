@@ -1,10 +1,14 @@
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 
 interface InputFieldProps {
+  label: string;
   id: string;
-  type: string;
+  type?: string;
+  name: string;
+  required?: boolean;
   placeholder: string;
   value: string;
+  className?: string;
   onChange: React.ChangeEventHandler<HTMLInputElement>;
   showPasswordToggle?: boolean;
   onTogglePasswordVisibility?: () => void;
@@ -37,7 +41,11 @@ const InputField: React.FC<InputFieldProps> = ({
           className="absolute right-3 top-3 cursor-pointer"
           onClick={onTogglePasswordVisibility}
         >
-          {type === 'password' ? <AiOutlineEyeInvisible size={24} /> : <AiOutlineEye size={24} />}
+          {type === "password" ? (
+            <AiOutlineEyeInvisible size={24} />
+          ) : (
+            <AiOutlineEye size={24} />
+          )}
         </span>
       )}
     </div>
