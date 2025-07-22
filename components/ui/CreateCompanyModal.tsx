@@ -52,7 +52,7 @@ export default function CreateCompanyModal({
     }
 
     const payload = {
-      name,
+      companyName: name,
       email,
       phone,
       address,
