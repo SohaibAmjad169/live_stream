@@ -192,7 +192,7 @@ export const getDashboardData = async (): Promise<any> => {
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error("❌ API Error Response:", errorText);
+    console.error("API Error Response:", errorText);
     await handleApiError(response);
   }
 
