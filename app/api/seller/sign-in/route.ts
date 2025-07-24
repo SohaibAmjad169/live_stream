@@ -3,12 +3,19 @@ import { connectDB } from "@/lib/db/dbConnect";
 import User from "@/models/User";
 import { compare } from "bcrypt";
 import { SignJWT } from "jose";
-import type { JWTPayload } from "jose";
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
 
-async function generateToken(payload: JWTPayload) {
-  return new SignJWT(payload)
+async function generateToken({
+  id,
+  email,
+  role,
+}: {
+  id: string;
+  email: string;
+  role: string;
+}): Promise<string> {
+  return await new SignJWT({ id, email, role })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
@@ -43,10 +50,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const { email: userEmail, role } = user.toObject();
+
   const token = await generateToken({
-    userId: user._id.toString(),
-    role: user.role,
-    email: user.email,
+    id: user._id.toString(),
+    email: userEmail,
+    role,
   });
 
   const response = NextResponse.json({

@@ -1,17 +1,24 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '@/lib/db/dbConnect';
-import User from '@/models/User';
-import { compare } from 'bcrypt';
-import { SignJWT } from 'jose';
-import type { JWTPayload } from 'jose';
+import { NextRequest, NextResponse } from "next/server";
+import { connectDB } from "@/lib/db/dbConnect";
+import User from "@/models/User";
+import { compare } from "bcrypt";
+import { SignJWT } from "jose";
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
 
-async function generateToken(payload: JWTPayload) {
-  return new SignJWT(payload)
-    .setProtectedHeader({ alg: 'HS256' })
+async function generateToken({
+  id,
+  email,
+  role,
+}: {
+  id: string;
+  email: string;
+  role: string;
+}): Promise<string> {
+  return await new SignJWT({ id, email, role })
+    .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime('7d')
+    .setExpirationTime("7d")
     .sign(JWT_SECRET);
 }
 
@@ -21,39 +28,50 @@ export async function POST(req: NextRequest) {
   const { email, password } = await req.json();
 
   if (!email || !password) {
-    return NextResponse.json({ message: 'Email and password required' }, { status: 400 });
+    return NextResponse.json(
+      { message: "Email and password required" },
+      { status: 400 }
+    );
   }
 
-  const user = await User.findOne({ email, role: 'super_admin' });
+  const user = await User.findOne({ email, role: "super_admin" });
   if (!user) {
-    return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
+    return NextResponse.json(
+      { message: "Invalid credentials" },
+      { status: 401 }
+    );
   }
 
   const valid = await compare(password, user.password);
   if (!valid) {
-    return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 });
+    return NextResponse.json(
+      { message: "Invalid credentials" },
+      { status: 401 }
+    );
   }
 
+  const { email: userEmail, role } = user.toObject();
+
   const token = await generateToken({
-    userId: user._id.toString(),
-    role: user.role,
-    email: user.email
+    id: user._id.toString(),
+    email: userEmail,
+    role,
   });
 
   const response = NextResponse.json({
     success: true,
-    message: 'Logged in successfully',
-    token
+    message: "Logged in successfully",
+    token,
   });
 
-  response.cookies.set('token', token, {
+  response.cookies.set("token", token, {
     httpOnly: true,
-    path: '/',
+    path: "/",
     maxAge: 60 * 60 * 2,
   });
 
-  response.cookies.set('isLoggedIn', 'true');
-  response.cookies.set('userRole', user.role);
+  response.cookies.set("isLoggedIn", "true");
+  response.cookies.set("userRole", user.role);
 
   return response;
 }

@@ -6,7 +6,6 @@ export async function requireRole(
   allowedRoles: string[]
 ): Promise<NextResponse | { id: string; role: string }> {
   const result = await verifyToken(req);
-
   if ("status" in result) return result as NextResponse;
 
   const { role } = result.user;
@@ -14,5 +13,5 @@ export async function requireRole(
     return NextResponse.json({ message: "Forbidden" }, { status: 403 });
   }
 
-  return { id: result.user.userId, role: result.user.role };
+  return { id: result.user.id, role: result.user.role };
 }
