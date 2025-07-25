@@ -6,7 +6,12 @@ import { useState, useRef, useEffect } from "react";
 type Props = {
   onAddUserClick: () => void;
   onSearch: (query: string) => void;
+
+}
+
+
 };
+
 export default function UsersHeader({ onAddUserClick }: Props) {
   const [userOpen, setUserOpen] = useState(false);
   const [companyOpen, setCompanyOpen] = useState(false);

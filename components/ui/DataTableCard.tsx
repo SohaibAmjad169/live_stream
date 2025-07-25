@@ -1,40 +1,47 @@
 "use client";
 
-import { ReactNode } from "react";
-import ActionDropdown from "./ActionDropdown";
+import React from "react";
 
-interface Column {
+type Column<T> = {
   label: string;
-  key: string;
-}
-
-type StatusColorMap = Record<string, string>;
-
-interface DataTableCardProps<T extends Record<string, unknown>> {
-  title?: string;
-  total?: ReactNode;
-  columns: Column[];
+  key: keyof T;
+};
+type DataTableCardProps<T> = {
+  columns: Column<T>[];
   rows: T[];
-  statusColorMap?: StatusColorMap;
-  minHeight?: string;
+  statusColorMap?: Record<string, string>;
   enableActions?: boolean;
   onActionClick?: (row: T, action: string) => void;
+
+  isLoading?: boolean;
+};
+
   striped?: boolean; // ✅ new prop
   isLoading?: boolean;
 }
 
-export default function DataTableCard<T extends Record<string, unknown>>({
-  title,
-  total,
+
+export default function DataTableCard<T>({
   columns,
   rows,
-  statusColorMap = {},
-  minHeight,
+  statusColorMap,
   enableActions = false,
   onActionClick,
-  striped = true,
+  isLoading = false,
 }: DataTableCardProps<T>) {
   return (
+
+    <div className="overflow-x-auto border rounded-md p-4">
+      {isLoading ? (
+        <p>Loading...</p>
+      ) : (
+        <table className="w-full text-sm text-left text-gray-700">
+          <thead className="text-xs uppercase bg-gray-100">
+            <tr>
+              {columns.map((col, index) => (
+                <th key={index} className="px-4 py-2 whitespace-nowrap">
+                  {col.label}
+
     <div
       className="rounded-xl border border-[#F8F9FA] bg-white shadow-[0_4px_20px_0_#EEEEEE80] p-4 sm:p-6 w-full"
       style={{ minHeight }}
@@ -54,59 +61,47 @@ export default function DataTableCard<T extends Record<string, unknown>>({
               {columns.map((col) => (
                 <th key={col.key} className="pb-2  sm:pb-3 whitespace-nowrap">
                   {col.label.toUpperCase()}
+
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="text-xs sm:text-sm text-[#19191D]">
-            {rows.map((row, i) => (
-              <tr
-                key={i}
-                className={`border-b border-[#F8F9FA] last:border-none relative ${
-                  striped ? (i % 2 === 1 ? "bg-[#F7F9FC]" : "") : ""
-                }`}
-              >
-                {columns.map((col, index) => {
-                  const isLast = index === columns.length - 1;
-                  const cellValue = row[col.key];
+          <tbody>
+            {rows.map((row, rowIndex) => (
+              <tr key={rowIndex} className="border-b">
+                {columns.map((col, colIndex) => {
+                  const value = row[col.key];
+                  const displayVal =
+                    typeof value === "string"
+                      ? value
+                      : Array.isArray(value)
+                      ? value.join(", ")
+                      : value?.toString() ?? "—";
 
                   return (
-                    <td
-                      key={col.key}
-                      className={`py-2 px-2 sm:py-3 ${!isLast ? "pr-4" : ""} ${
-                        col.key === "status"
-                          ? "whitespace-nowrap flex items-center gap-2"
-                          : "whitespace-nowrap"
-                      }`}
-                    >
-                      {col.key === "status" &&
-                      typeof cellValue === "string" &&
-                      statusColorMap[cellValue] ? (
-                        <>
-                          <span
-                            className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full"
-                            style={{
-                              backgroundColor: statusColorMap[cellValue],
-                            }}
-                          />
-                          <span>{cellValue}</span>
-                        </>
-                      ) : col.key === "actions" &&
-                        enableActions &&
-                        "dropdownActions" in row &&
-                        Array.isArray(
-                          (row as { dropdownActions?: string[] })
-                            .dropdownActions
-                        ) ? (
-                        <ActionDropdown
-                          items={
-                            (row as { dropdownActions?: string[] })
-                              .dropdownActions ?? []
-                          }
-                          onSelect={(action) => onActionClick?.(row, action)}
-                        />
+                    <td key={colIndex} className="px-4 py-2 whitespace-nowrap">
+                      {col.key === "status" && statusColorMap ? (
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            statusColorMap[value as string] || "bg-gray-200"
+                          }`}
+                        >
+                          {displayVal}
+                        </span>
+                      ) : col.key === "dropdownActions" && enableActions ? (
+                        <div className="flex gap-2">
+                          {(value as string[])?.map((action, i) => (
+                            <button
+                              key={i}
+                              className="text-blue-600 hover:underline text-xs"
+                              onClick={() => onActionClick?.(row, action)}
+                            >
+                              {action}
+                            </button>
+                          ))}
+                        </div>
                       ) : (
-                        (cellValue as ReactNode)
+                        displayVal
                       )}
                     </td>
                   );
@@ -115,7 +110,7 @@ export default function DataTableCard<T extends Record<string, unknown>>({
             ))}
           </tbody>
         </table>
-      </div>
+      )}
     </div>
   );
 }

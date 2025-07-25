@@ -1,17 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import DataTableCard from "@/components/ui/DataTableCard";
+import { saveAs } from "file-saver";
+import { useQueryClient } from "@tanstack/react-query";
+
 import UsersHeader from "@/components/ui/UsersHeader";
+import DataTableCard from "@/components/ui/DataTableCard";
 import UserDetailsModal from "@/components/ui/UserDetailsModal";
 import EditUserModal from "@/components/ui/EditUserModal";
 import ResetPasswordModal from "@/components/ui/ResetPasswordModal";
 import DeactivateCompanyConfirmModal from "@/components/ui/DeactivateCompanyConfirmModal";
+n
+
 import SuccessModal from "@/components/ui/SuccessModal";
+
 import AddUserModal from "@/components/ui/AddUserModal";
+import SuccessModal from "@/components/ui/SuccessModal";
 import DashboardFooter from "@/components/ui/DashboardFooter";
 
 import { useQueryClient } from "@tanstack/react-query";
+
 import { useUsers } from "../../../hooks/users/useUsers";
 import { useUserById } from "../../../hooks/users/useUserById";
 import { useAddUser } from "../../../hooks/users/useAddUser";
@@ -24,9 +32,14 @@ import {
   AddUserPayload,
   UpdateUserPayload,
 } from "../../../lib/userAPITypes";
+
+
+const usersColumns: { label: string; key: keyof UserRow }[] = [
+
 import { saveAs } from "file-saver";
 
 const usersColumns = [
+
   { label: "Name", key: "name" },
   { label: "Company Name", key: "company" },
   { label: "Role", key: "role" },
@@ -37,7 +50,22 @@ const usersColumns = [
   { label: "Actions", key: "actions" },
 ];
 
+
+const userStatusColors: Record<string, string> = {
+  Active: "#19CE71",
+  "In-Active": "#F24E1E",
+};
+
 export default function Users() {
+  const queryClient = useQueryClient();
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const pageSize = 15;
+
+
+export default function Users() {
+
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedUserForModal, setSelectedUserForModal] =
     useState<UserRow | null>(null);
@@ -46,13 +74,15 @@ export default function Users() {
   const [editOpen, setEditOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const [confirmDeactivateOpen, setConfirmDeactivateOpen] = useState(false);
-  const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [addUserOpen, setAddUserOpen] = useState(false);
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
 
   const pageSize = 15;
+
 
   const {
     data: usersData,
@@ -61,12 +91,16 @@ export default function Users() {
     refetch: refetchUsers,
   } = useUsers({ page: currentPage + 1, size: pageSize, q: searchQuery });
 
+
   const {
     data: userDetails,
     isLoading: isLoadingUserDetails,
     error: userDetailsError,
   } = useUserById(selectedUserId);
 
+
+  const { data: userDetails, isLoading: isLoadingUserDetails } =
+    useUserById(selectedUserId);
   const { mutate: addUserMutation, isPending: isAddingUser } = useAddUser();
   const { mutate: updateUserMutation, isPending: isUpdatingUser } =
     useUpdateUser();
@@ -79,7 +113,11 @@ export default function Users() {
       const mappedUser: UserRow = {
         id: userDetails._id,
         name: userDetails.name,
+
+        company: userDetails.company?.name || "N/A",
+
         company: userDetails.company ? userDetails.company.name : "N/A",
+
         role: userDetails.role,
         email: userDetails.email,
         joinedOn: userDetails.joinedOn,
@@ -123,6 +161,41 @@ export default function Users() {
       ],
     })) || [];
 
+
+  // Map users from API response
+  const mappedUsers: UserRow[] =
+    usersData?.users?.map((user: ApiUser) => ({
+      id: user._id,
+      name: user.name,
+      company: user.company?.name || "N/A",
+      role: user.role,
+      email: user.email,
+      joinedOn: user.joinedOn,
+      status: user.isActive ? "Active" : "In-Active",
+      lastLogin: user.lastLogin,
+      phone: user.phone,
+      address: user.address,
+      website: user.website,
+      plan: user.subscriptionPlan,
+      purchaseDate: user.purchaseDate,
+      expiryDate: user.expiryDate,
+      dropdownActions: [
+        "View details",
+        "Edit Details",
+        "Reset Password",
+        "Deactivate",
+      ],
+    })) || [];
+
+  const totalPages = Math.ceil((usersData?.totalCount || 0) / pageSize);
+
+  const handleActionClick = (row: UserRow, action: string) => {
+    setSelectedUserId(row.id);
+    setDetailsOpen(action === "View details");
+    setEditOpen(action === "Edit Details");
+    setResetOpen(action === "Reset Password");
+    setConfirmDeactivateOpen(action === "Deactivate");
+
   const actualTotalPages = Math.ceil((usersData?.totalCount || 0) / pageSize);
   const displayTotalPages = Math.min(actualTotalPages, 3);
 
@@ -156,6 +229,7 @@ export default function Users() {
         setResetOpen(false);
         break;
     }
+
   };
 
   const handleStatusChange = (
@@ -193,7 +267,11 @@ export default function Users() {
           setSelectedUserId(null);
         },
         onError: (error: any) => {
+
+          console.error("Error saving user:", error.message);
+
           console.error("Error saving user details:", error.message);
+
           alert(`Failed to save user: ${error.message || "Unknown error"}`);
         },
       }
@@ -221,11 +299,89 @@ export default function Users() {
     });
   };
 
-  const userStatusColors = {
-    Active: "#19CE71",
-    "In-Active": "#F24E1E",
+  // Export logic only, no rendering here!
+  const handleDownloadList = async (format: string) => {
+    if (mappedUsers.length === 0) {
+      alert("No users to export.");
+      return;
+    }
+
+    const fileName = `UsersList_${new Date().toISOString().split("T")[0]}`;
+
+    if (format === "PDF") {
+      const { default: jsPDF } = await import("jspdf");
+      const doc = new jsPDF();
+      const margin = 10;
+      let y = 20;
+
+      const colWidths: { [key: string]: number } = {
+        name: 30,
+        company: 30,
+        role: 25,
+        email: 40,
+        joinedOn: 25,
+        status: 20,
+        lastLogin: 40,
+        actions: 20,
+      };
+
+      // Header
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(255);
+      doc.setFillColor("#1E3A8A");
+
+      let x = margin;
+      usersColumns.forEach((col) => {
+        const w = colWidths[col.key] || 25;
+        doc.rect(x, y, w, 10, "F");
+        doc.text(col.label, x + 2, y + 7);
+        x += w;
+      });
+      y += 10;
+
+      // Body
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(0);
+
+      mappedUsers.forEach((user, idx) => {
+        x = margin;
+        usersColumns.forEach((col) => {
+          const w = colWidths[col.key] || 25;
+          let val = user[col.key as keyof UserRow] ?? "";
+          if (col.key === "actions") val = "View/Edit";
+          doc.text(String(val), x + 2, y + 6);
+          x += w;
+        });
+        y += 10;
+        if (y > 280) {
+          doc.addPage();
+          y = 20;
+        }
+      });
+
+      doc.save(`${fileName}.pdf`);
+    } else {
+      const csvHeader = usersColumns.map((c) => `"${c.label}"`).join(",");
+      const csvRows = mappedUsers.map((user) =>
+        usersColumns
+          .map((col) => {
+            let val = user[col.key as keyof UserRow] ?? "";
+            if (col.key === "actions") return `"View/Edit"`;
+            return `"${val.toString().replace(/"/g, '""')}"`;
+          })
+          .join(",")
+      );
+
+      const csvContent = [csvHeader, ...csvRows].join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const ext = format === "Excel" ? "xlsx" : "csv";
+      saveAs(blob, `${fileName}.${ext}`);
+    }
   };
 
+  // Main rendering logic
   if (isLoadingUsers) {
     return (
       <div className="flex justify-center items-center h-screen text-lg font-semibold text-gray-700">
@@ -236,17 +392,22 @@ export default function Users() {
 
   if (usersError) {
     return (
-      <div className="flex flex-col justify-center items-center h-screen text-red-600 text-lg font-semibold">
+      <div className="flex flex-col items-center justify-center h-screen text-red-500 text-lg">
         Error loading users: {usersError.message}
         <button
           onClick={() => refetchUsers()}
+
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+
           className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+
         >
           Retry
         </button>
       </div>
     );
   }
+
 
   const handleDownloadList = async (format: string) => {
     if (!mappedUsers || mappedUsers.length === 0) {
@@ -405,6 +566,7 @@ export default function Users() {
     }
   };
 
+
   return (
     <div className="flex flex-col gap-6">
       <UsersHeader
@@ -417,7 +579,7 @@ export default function Users() {
 
       <DataTableCard<UserRow>
         columns={usersColumns}
-        rows={paginatedRows}
+        rows={mappedUsers}
         statusColorMap={userStatusColors}
         enableActions
         onActionClick={handleActionClick}
@@ -482,7 +644,7 @@ export default function Users() {
 
       <DashboardFooter
         currentPage={currentPage}
-        totalPages={displayTotalPages}
+        totalPages={totalPages}
         onPageChange={setCurrentPage}
         onDownload={handleDownloadList}
       />

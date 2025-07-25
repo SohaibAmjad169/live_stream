@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pencil, Lock } from "lucide-react";
 import TextInput from "@/components/ui/TextInput";
 import Image from "next/image";
@@ -8,20 +8,49 @@ import clsx from "clsx";
 
 export default function AccountSettings() {
   const [form, setForm] = useState({
-    firstName: "Mustiq",
-    lastName: "Haider",
-    email: "mustiq22@gmail.com",
-    password: "password",
-    companyName: "AR Groups",
-    contactEmail: "Company.Admin@gmail.com",
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    companyName: "",
+    contactEmail: "",
   });
 
   const [isEditing, setIsEditing] = useState(false);
 
+  // ✅ Fetch user data on page load
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const token = localStorage.getItem("token"); // or from cookies
+        const res = await fetch("/api/user", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) throw new Error("Failed to load user data");
+
+        const data = await res.json();
+        setForm({
+          firstName: data.firstName || "",
+          lastName: data.lastName || "",
+          email: data.email || "",
+          password: "",
+          companyName: data.companyName || "",
+          contactEmail: data.contactEmail || "",
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
+
   const handleChange = (key: string, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
-
   return (
     <div className="min-h-screen bg-[#F7F9FC]">
       <div className="max-w-6xl h-full mx-auto bg-white rounded-[20px] p-6 sm:p-8">
@@ -38,7 +67,9 @@ export default function AccountSettings() {
               />
             </div>
             <div>
-              <h2 className="text-[#05004E] text-2xl font-bold mb-1">Account Settings</h2>
+              <h2 className="text-[#05004E] text-2xl font-bold mb-1">
+                Account Settings
+              </h2>
               <p className="text-sm text-[#737791]">Account Level: Seller</p>
             </div>
           </div>
@@ -67,7 +98,9 @@ export default function AccountSettings() {
         <div className="flex flex-col gap-6">
           {/* General Info */}
           <div>
-            <h3 className="text-[#05004E] text-md font-semibold mb-4">General Info</h3>
+            <h3 className="text-[#05004E] text-md font-semibold mb-4">
+              General Info
+            </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               <TextInput
                 label="First Name"
@@ -99,7 +132,9 @@ export default function AccountSettings() {
 
           {/* Company Info */}
           <div>
-            <h3 className="text-[#05004E] text-md font-semibold mb-4">Associated Company</h3>
+            <h3 className="text-[#05004E] text-md font-semibold mb-4">
+              Associated Company
+            </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <TextInput
                 label="Company Name"

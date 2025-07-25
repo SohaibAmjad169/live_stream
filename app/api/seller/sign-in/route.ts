@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const user = await User.findOne({ email, role: "super_admin" });
+  const user = await User.findOne({ email, role: "seller" });
   if (!user) {
     return NextResponse.json(
       { message: "Invalid credentials" },

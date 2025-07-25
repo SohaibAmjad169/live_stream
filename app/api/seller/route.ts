@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   const exists = await User.findOne({ email });
   if (exists) {
     return NextResponse.json(
-      { message: "Super admin already exists" },
+      { message: "Seller already exists" },
       { status: 400 }
     );
   }
@@ -22,13 +22,13 @@ export async function POST(req: NextRequest) {
     name,
     email,
     password: hashed,
-    role: "super_admin",
+    role: "seller",
     companyId: null,
   });
 
   return NextResponse.json({
     success: true,
-    message: "Super admin created",
+    message: "Seller created",
     user: {
       id: user._id,
       name: user.name,

@@ -3,19 +3,13 @@ import { connectDB } from "@/lib/db/dbConnect";
 import User from "@/models/User";
 import { compare } from "bcrypt";
 import { SignJWT } from "jose";
+import type { JWTPayload } from "jose";
+import { log } from "console";
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
 
-async function generateToken({
-  id,
-  email,
-  role,
-}: {
-  id: string;
-  email: string;
-  role: string;
-}): Promise<string> {
-  return await new SignJWT({ id, email, role })
+async function generateToken(payload: JWTPayload) {
+  return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
@@ -26,6 +20,8 @@ export async function POST(req: NextRequest) {
   await connectDB();
 
   const { email, password } = await req.json();
+  console.log("Admin sign-in request received", { email });
+  console.log("Request body:", { email, password });
 
   if (!email || !password) {
     return NextResponse.json(
@@ -34,7 +30,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const user = await User.findOne({ email, role: "super_admin" });
+  const user = await User.findOne({ email, role: "admin" });
+  console.log("User found:", user ? user._id : "No user found");
   if (!user) {
     return NextResponse.json(
       { message: "Invalid credentials" },
@@ -50,12 +47,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { email: userEmail, role } = user.toObject();
-
   const token = await generateToken({
-    id: user._id.toString(),
-    email: userEmail,
-    role,
+    userId: user._id.toString(),
+    role: user.role,
+    email: user.email,
   });
 
   const response = NextResponse.json({

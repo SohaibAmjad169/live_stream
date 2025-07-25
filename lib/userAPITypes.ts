@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 export const BASE_URL = "http://localhost:3000";
 
 export interface ApiUser {
@@ -15,8 +17,8 @@ export interface ApiUser {
   subscriptionPlan?: string;
   purchaseDate?: string;
   expiryDate?: string;
+  users: {};
 }
-
 export interface UserRow {
   [key: string]: unknown;
   id: string;
@@ -24,8 +26,8 @@ export interface UserRow {
   email: string;
   company: string;
   role: string;
-  joinedOn: string;
-  lastLogin: string;
+  joinedOn?: string;
+  lastLogin?: string;
   status: "Active" | "In-Active";
   phone?: string;
   address?: string;
@@ -33,7 +35,10 @@ export interface UserRow {
   plan?: string;
   purchaseDate?: string;
   expiryDate?: string;
+
   dropdownActions?: string[];
+
+  actions?: string;
 }
 
 export interface AddUserPayload {
@@ -74,7 +79,10 @@ export interface ApiResponse {
 }
 
 export interface Company {
-  _id: string;
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId;
+    ref: "Company"; // this must match the name used when exporting the Company model
+  };
   name: string;
 }
 
@@ -108,3 +116,17 @@ export interface DashboardApiResponse {
   revenueChartData: DashboardChartData[];
   topCompanies: TopCompany[];
 }
+
+export type FetchUsersParams = {
+  page?: number;
+  size?: number;
+  q?: string;
+};
+
+export type FetchUsersResponse = {
+  users: ApiUser[];
+  total: number;
+  page: number;
+  size: number;
+  totalCount?: number;
+};
