@@ -10,9 +10,15 @@ import UserDetailsModal from "@/components/ui/UserDetailsModal";
 import EditUserModal from "@/components/ui/EditUserModal";
 import ResetPasswordModal from "@/components/ui/ResetPasswordModal";
 import DeactivateCompanyConfirmModal from "@/components/ui/DeactivateCompanyConfirmModal";
+n
+
+import SuccessModal from "@/components/ui/SuccessModal";
+
 import AddUserModal from "@/components/ui/AddUserModal";
 import SuccessModal from "@/components/ui/SuccessModal";
 import DashboardFooter from "@/components/ui/DashboardFooter";
+
+import { useQueryClient } from "@tanstack/react-query";
 
 import { useUsers } from "../../../hooks/users/useUsers";
 import { useUserById } from "../../../hooks/users/useUserById";
@@ -27,7 +33,13 @@ import {
   UpdateUserPayload,
 } from "../../../lib/userAPITypes";
 
+
 const usersColumns: { label: string; key: keyof UserRow }[] = [
+
+import { saveAs } from "file-saver";
+
+const usersColumns = [
+
   { label: "Name", key: "name" },
   { label: "Company Name", key: "company" },
   { label: "Role", key: "role" },
@@ -37,6 +49,7 @@ const usersColumns: { label: string; key: keyof UserRow }[] = [
   { label: "Last Login", key: "lastLogin" },
   { label: "Actions", key: "actions" },
 ];
+
 
 const userStatusColors: Record<string, string> = {
   Active: "#19CE71",
@@ -50,6 +63,9 @@ export default function Users() {
   const [searchQuery, setSearchQuery] = useState("");
   const pageSize = 15;
 
+
+export default function Users() {
+
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedUserForModal, setSelectedUserForModal] =
     useState<UserRow | null>(null);
@@ -62,12 +78,26 @@ export default function Users() {
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
+
+  const pageSize = 15;
+
+
   const {
     data: usersData,
     isLoading: isLoadingUsers,
     error: usersError,
     refetch: refetchUsers,
   } = useUsers({ page: currentPage + 1, size: pageSize, q: searchQuery });
+
+
+  const {
+    data: userDetails,
+    isLoading: isLoadingUserDetails,
+    error: userDetailsError,
+  } = useUserById(selectedUserId);
+
 
   const { data: userDetails, isLoading: isLoadingUserDetails } =
     useUserById(selectedUserId);
@@ -78,11 +108,16 @@ export default function Users() {
     useUpdateUserStatus();
 
   useEffect(() => {
+    console.log("Selected user ID:", selectedUserId);
     if (userDetails) {
       const mappedUser: UserRow = {
         id: userDetails._id,
         name: userDetails.name,
+
         company: userDetails.company?.name || "N/A",
+
+        company: userDetails.company ? userDetails.company.name : "N/A",
+
         role: userDetails.role,
         email: userDetails.email,
         joinedOn: userDetails.joinedOn,
@@ -100,6 +135,32 @@ export default function Users() {
       setSelectedUserForModal(null);
     }
   }, [userDetails]);
+  console.log(usersData);
+
+  const mappedUsers: UserRow[] =
+    usersData?.users?.map((apiUser: ApiUser) => ({
+      id: apiUser._id,
+      name: apiUser.name,
+      company: apiUser.company ? apiUser.company.name : "N/A",
+      role: apiUser.role,
+      email: apiUser.email,
+      joinedOn: apiUser.joinedOn,
+      status: apiUser.isActive ? "Active" : "In-Active",
+      lastLogin: apiUser.lastLogin,
+      phone: apiUser.phone,
+      address: apiUser.address,
+      website: apiUser.website,
+      plan: apiUser.subscriptionPlan,
+      purchaseDate: apiUser.purchaseDate,
+      expiryDate: apiUser.expiryDate,
+      dropdownActions: [
+        "View details",
+        "Edit Details",
+        "Reset Password",
+        "Deactivate",
+      ],
+    })) || [];
+
 
   // Map users from API response
   const mappedUsers: UserRow[] =
@@ -134,6 +195,41 @@ export default function Users() {
     setEditOpen(action === "Edit Details");
     setResetOpen(action === "Reset Password");
     setConfirmDeactivateOpen(action === "Deactivate");
+
+  const actualTotalPages = Math.ceil((usersData?.totalCount || 0) / pageSize);
+  const displayTotalPages = Math.min(actualTotalPages, 3);
+
+  const paginatedRows = mappedUsers;
+
+  const handleActionClick = (row: UserRow, action: string) => {
+    setSelectedUserId(row.id);
+    switch (action) {
+      case "View details":
+        setDetailsOpen(true);
+        setEditOpen(false);
+        setResetOpen(false);
+        setConfirmDeactivateOpen(false);
+        break;
+      case "Edit Details":
+        setEditOpen(true);
+        setDetailsOpen(false);
+        setResetOpen(false);
+        setConfirmDeactivateOpen(false);
+        break;
+      case "Reset Password":
+        setResetOpen(true);
+        setDetailsOpen(false);
+        setEditOpen(false);
+        setConfirmDeactivateOpen(false);
+        break;
+      case "Deactivate":
+        setConfirmDeactivateOpen(true);
+        setDetailsOpen(false);
+        setEditOpen(false);
+        setResetOpen(false);
+        break;
+    }
+
   };
 
   const handleStatusChange = (
@@ -171,7 +267,11 @@ export default function Users() {
           setSelectedUserId(null);
         },
         onError: (error: any) => {
+
           console.error("Error saving user:", error.message);
+
+          console.error("Error saving user details:", error.message);
+
           alert(`Failed to save user: ${error.message || "Unknown error"}`);
         },
       }
@@ -296,13 +396,176 @@ export default function Users() {
         Error loading users: {usersError.message}
         <button
           onClick={() => refetchUsers()}
+
           className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+
+          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+
         >
           Retry
         </button>
       </div>
     );
   }
+
+
+  const handleDownloadList = async (format: string) => {
+    if (!mappedUsers || mappedUsers.length === 0) {
+      console.warn("No users to download.");
+      return;
+    }
+
+    const fileName = `UsersList_${new Date().toISOString().split("T")[0]}`;
+
+    if (format === "PDF") {
+      try {
+        const { default: jsPDF } = await import("jspdf");
+        const doc = new jsPDF() as any;
+        const startY = 20;
+        const margin = 10;
+        let y = startY;
+        const lineHeight = 7;
+        const headerHeight = 10;
+        const cellPadding = 2;
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+
+        const columnWidths: { [key: string]: number } = {
+          name: 30,
+          company: 30,
+          role: 25,
+          email: 40,
+          joinedOn: 25,
+          status: 20,
+          lastLogin: 40,
+          actions: 20,
+        };
+
+        doc.setFillColor("#1E3A8A");
+        doc.setTextColor("#FFFFFF");
+        let currentX = margin;
+        usersColumns.forEach((col) => {
+          const width = columnWidths[col.key] || 25;
+          doc.rect(currentX, y, width, headerHeight, "F");
+          doc.text(col.label, currentX + cellPadding, y + headerHeight / 2 + 2);
+          currentX += width;
+        });
+        y += headerHeight;
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor("#000000");
+
+        mappedUsers.forEach((user, rowIndex) => {
+          currentX = margin;
+          const rowHeight = lineHeight + 2 * cellPadding;
+
+          if (y + rowHeight > doc.internal.pageSize.height - margin) {
+            doc.addPage();
+            y = startY;
+            doc.setFillColor("#1E3A8A");
+            doc.setTextColor("#FFFFFF");
+            let headerX = margin;
+            usersColumns.forEach((col) => {
+              const width = columnWidths[col.key] || 25;
+              doc.rect(headerX, y, width, headerHeight, "F");
+              doc.text(
+                col.label,
+                headerX + cellPadding,
+                y + headerHeight / 2 + 2
+              );
+              headerX += width;
+            });
+            y += headerHeight;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            doc.setTextColor("#000000");
+          }
+
+          doc.setFillColor(rowIndex % 2 === 0 ? "#F8F8F8" : "#FFFFFF");
+          doc.rect(
+            margin,
+            y,
+            doc.internal.pageSize.width - 2 * margin,
+            rowHeight,
+            "F"
+          );
+
+          usersColumns.forEach((col) => {
+            const width = columnWidths[col.key] || 25;
+            let value = String(user[col.key as keyof UserRow] ?? "");
+
+            if (
+              col.key === "company" &&
+              typeof user.company === "object" &&
+              user.company !== null
+            ) {
+              console.log("Company data:", user.company);
+              value = user.company || "N/A";
+            } else if (col.key === "status") {
+              value = user.status;
+            } else if (col.key === "actions") {
+              value = "View/Edit";
+            }
+            doc.rect(currentX, y, width, rowHeight);
+            doc.text(
+              value,
+              currentX + cellPadding,
+              y + cellPadding + lineHeight / 2
+            );
+            currentX += width;
+          });
+          y += rowHeight;
+        });
+
+        doc.save(`${fileName}.pdf`);
+      } catch (error) {
+        console.error("Error generating PDF:", error);
+        alert(
+          `Failed to generate PDF: ${
+            error instanceof Error ? error.message : String(error)
+          }. Please try again.`
+        );
+      }
+    } else if (format === "CSV" || format === "Excel") {
+      const csvHeader = usersColumns.map((col) => `"${col.label}"`).join(",");
+
+      const csvRows = mappedUsers.map((user) => {
+        return usersColumns
+          .map((col) => {
+            const key = col.key as keyof UserRow;
+            const value =
+              user[key] !== undefined && user[key] !== null
+                ? String(user[key])
+                : "";
+            if (
+              col.key === "company" &&
+              typeof user.company === "object" &&
+              user.company !== null
+            ) {
+              return `"${(user.company as any).name || "N/A"}"`;
+            } else if (col.key === "status") {
+              return `"${user.status}"`;
+            } else if (col.key === "actions") {
+              return `"${"View/Edit"}"`;
+            }
+            return `"${value.replace(/"/g, '""')}"`;
+          })
+          .join(",");
+      });
+
+      const csvContent = [csvHeader, ...csvRows].join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      saveAs(blob, `${fileName}.${format === "Excel" ? "xlsx" : "csv"}`);
+      if (format === "Excel") {
+        console.warn(
+          "For true Excel (.xlsx) files, consider a dedicated library like 'xlsx-js-style'. This generates a CSV with .xlsx extension."
+        );
+      }
+    }
+  };
+
 
   return (
     <div className="flex flex-col gap-6">

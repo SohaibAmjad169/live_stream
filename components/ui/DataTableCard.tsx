@@ -12,8 +12,14 @@ type DataTableCardProps<T> = {
   statusColorMap?: Record<string, string>;
   enableActions?: boolean;
   onActionClick?: (row: T, action: string) => void;
+
   isLoading?: boolean;
 };
+
+  striped?: boolean; // ✅ new prop
+  isLoading?: boolean;
+}
+
 
 export default function DataTableCard<T>({
   columns,
@@ -24,6 +30,7 @@ export default function DataTableCard<T>({
   isLoading = false,
 }: DataTableCardProps<T>) {
   return (
+
     <div className="overflow-x-auto border rounded-md p-4">
       {isLoading ? (
         <p>Loading...</p>
@@ -34,6 +41,27 @@ export default function DataTableCard<T>({
               {columns.map((col, index) => (
                 <th key={index} className="px-4 py-2 whitespace-nowrap">
                   {col.label}
+
+    <div
+      className="rounded-xl border border-[#F8F9FA] bg-white shadow-[0_4px_20px_0_#EEEEEE80] p-4 sm:p-6 w-full"
+      style={{ minHeight }}
+    >
+      {title && (
+        <h2 className="text-[#05004E] font-semibold text-xl sm:text-2xl mb-4 sm:mb-6 pb-2">
+          {title}
+        </h2>
+      )}
+
+      {total && <div className="mb-4">{total}</div>}
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full table-auto">
+          <thead>
+            <tr className="text-left text-[#1E3A8A] text-xs sm:text-sm border-b border-[#F2F3F9]">
+              {columns.map((col) => (
+                <th key={col.key} className="pb-2  sm:pb-3 whitespace-nowrap">
+                  {col.label.toUpperCase()}
+
                 </th>
               ))}
             </tr>

@@ -3,10 +3,14 @@
 import { ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
-interface Props {
+type Props = {
   onAddUserClick: () => void;
   onSearch: (query: string) => void;
+
 }
+
+
+};
 
 export default function UsersHeader({ onAddUserClick }: Props) {
   const [userOpen, setUserOpen] = useState(false);

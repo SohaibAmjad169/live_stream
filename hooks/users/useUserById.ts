@@ -10,9 +10,13 @@ const fetchUserByIdApi = async (userId: string): Promise<ApiUser> => {
     throw new Error("Authentication token not found. Please log in.");
   }
 
-  const url = `${BASE_URL}/api/super-admin/us er/${userId}`;
+
+//   const url = `${BASE_URL}/api/super-admin/us er/${userId}`;
+
+
+
   // If your API uses a query parameter like ?user_id=... as shown in screenshot, change to:
-  // const url = `${BASE_URL}/api/super-admin/user?user_id=${userId}`;
+  const url = `${BASE_URL}/api/super-admin/user?user_id=${userId}`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -31,11 +35,21 @@ const fetchUserByIdApi = async (userId: string): Promise<ApiUser> => {
     );
   }
 
+
+
+  console.log("Fetched user data:", await response.json());
+
   return response.json();
 };
 
 export const useUserById = (userId: string | null) => {
+
   console.log(userId);
+  return useQuery<ApiUser, Error>({
+    queryKey: ["user", userId],
+
+
+  console.log("useUserById called with userId:", userId);
   return useQuery<ApiUser, Error>({
     queryKey: ["user", userId],
 
