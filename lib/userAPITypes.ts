@@ -17,6 +17,7 @@ export interface ApiUser {
   subscriptionPlan?: string;
   purchaseDate?: string;
   expiryDate?: string;
+  users: {};
 }
 export interface UserRow {
   id: string;
@@ -79,7 +80,7 @@ export interface ApiResponse {
 export interface Company {
   companyId: {
     type: mongoose.Schema.Types.ObjectId;
-    ref: 'Company'; // this must match the name used when exporting the Company model
+    ref: "Company"; // this must match the name used when exporting the Company model
   };
   name: string;
 }
