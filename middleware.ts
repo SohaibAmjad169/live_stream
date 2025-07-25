@@ -11,6 +11,8 @@ export async function middleware(request: NextRequest) {
       "/api/super_admin/sign-in",
       "/api/admin/sign-in",
       "/api/seller/sign-in",
+      "/api/admin",
+      "/api/seller",
     ];
 
     if (publicApiPaths.includes(pathname)) {

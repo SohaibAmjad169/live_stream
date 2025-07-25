@@ -8,6 +8,7 @@ export interface IUser extends Document {
   password: string;
   companyName?: string;
   contactEmail?: string;
+  role: "admin" | "user";
 }
 
 const UserSchema = new Schema<IUser>({
@@ -17,6 +18,7 @@ const UserSchema = new Schema<IUser>({
   password: { type: String },
   companyName: { type: String },
   contactEmail: { type: String },
+  role: { type: String, enum: ["admin", "user"], required: true },
 });
 
 export default mongoose.models.User ||

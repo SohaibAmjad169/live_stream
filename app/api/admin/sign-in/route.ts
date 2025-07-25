@@ -4,6 +4,7 @@ import User from "@/models/User";
 import { compare } from "bcrypt";
 import { SignJWT } from "jose";
 import type { JWTPayload } from "jose";
+import { log } from "console";
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
 
@@ -19,6 +20,8 @@ export async function POST(req: NextRequest) {
   await connectDB();
 
   const { email, password } = await req.json();
+  console.log("Admin sign-in request received", { email });
+  console.log("Request body:", { email, password });
 
   if (!email || !password) {
     return NextResponse.json(
@@ -28,6 +31,7 @@ export async function POST(req: NextRequest) {
   }
 
   const user = await User.findOne({ email, role: "admin" });
+  console.log("User found:", user ? user._id : "No user found");
   if (!user) {
     return NextResponse.json(
       { message: "Invalid credentials" },
