@@ -20,6 +20,7 @@ export interface ApiUser {
   users: {};
 }
 export interface UserRow {
+  [key: string]: unknown;
   id: string;
   name: string;
   email: string;

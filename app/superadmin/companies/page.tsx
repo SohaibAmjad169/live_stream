@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -6,10 +5,9 @@ import DataTableCard from "@/components/ui/DataTableCard";
 import CompaniesHeader from "@/components/ui/CompaniesHeader";
 import CompanyDetailsModal from "@/components/ui/CompanyDetailsModal";
 import EditCompanyModal from "@/components/ui/EditCompanyModal";
-import CreateCompanyModal from "@/components/ui/CreateCompanyModal"; 
+import CreateCompanyModal from "@/components/ui/CreateCompanyModal";
 import InvitationCodeModal from "@/components/ui/InvitationCodeModal";
 import DashboardFooter from "@/components/ui/DashboardFooter";
-
 
 import { useCompanies } from "../../../hooks/companies/useCompanies";
 import { useCompanyById } from "../../../hooks/companies/useCompanyById";
@@ -24,10 +22,12 @@ import { saveAs } from "file-saver";
 
 export interface CompanyRow {
   [key: string]: unknown;
-  id: string; 
+  id: string;
+  _id: string;
+  company: any;
   name: string;
   email: string;
-  lastPurchase?: string; 
+  lastPurchase?: string;
   plan: string;
   status: "Active" | "In-Active";
   dropdownActions?: string[];
@@ -36,8 +36,8 @@ export interface CompanyRow {
   website?: string;
   purchaseDate?: string;
   expiryDate?: string;
-  subscriptionPlan?: string; 
-  isActive?: boolean; 
+  subscriptionPlan?: string;
+  isActive?: boolean;
   password?: string;
   confirmPassword?: string;
 }
@@ -45,9 +45,9 @@ export interface CompanyRow {
 const companiesColumns = [
   { label: "Company name", key: "name" },
   { label: "Admin Email", key: "email" },
-  { label: "Subscription Plan", key: "plan" }, 
+  { label: "Subscription Plan", key: "plan" },
   { label: "Renewal Date", key: "expiryDate" },
-  { label: "Status", key: "status" }, 
+  { label: "Status", key: "status" },
   { label: "Actions", key: "actions" },
 ];
 
@@ -67,7 +67,6 @@ export default function Companies() {
   const [currentPage, setCurrentPage] = useState(0);
   const pageSize = 3;
 
-
   const queryClient = useQueryClient();
 
   const { data: companies, isLoading, error } = useCompanies();
@@ -75,12 +74,12 @@ export default function Companies() {
     data: companyDetails,
     isLoading: isLoadingCompanyDetails,
     error: companyDetailsError,
-  } = useCompanyById(selectedCompanyId); 
+  } = useCompanyById(selectedCompanyId);
 
   const { mutate: updateCompanyDetailsMutation, isPending: isUpdatingDetails } =
-    useUpdateCompanyDetails(); 
+    useUpdateCompanyDetails();
   const { mutate: updateCompanyStatusMutation, isPending: isUpdatingStatus } =
-    useUpdateCompanyStatus(); 
+    useUpdateCompanyStatus();
 
   useEffect(() => {
     console.log(
@@ -96,7 +95,6 @@ export default function Companies() {
       companyDetailsError
     );
     if (companyDetails) {
-    
       const mappedCompanyDetails: CompanyRow = {
         ...companyDetails,
         _id: companyDetails._id || companyDetails.id,
@@ -153,7 +151,7 @@ export default function Companies() {
       phone: updated.phone,
       address: updated.address,
       website: updated.website,
-      subscriptionPlan: updated.plan, 
+      subscriptionPlan: updated.plan,
       purchaseDate: updated.purchaseDate,
       expiryDate: updated.expiryDate,
       isActive: updated.status === "Active" ? true : false,
@@ -173,7 +171,7 @@ export default function Companies() {
           setEditOpen(false);
           setSelectedCompanyId(null);
           queryClient.invalidateQueries({ queryKey: ["companies"] });
-          queryClient.invalidateQueries({ queryKey: ["company", updated.id] }); 
+          queryClient.invalidateQueries({ queryKey: ["company", updated.id] });
         },
         onError: (err: any) => {
           console.error(
@@ -203,10 +201,9 @@ export default function Companies() {
           setDetailsOpen(false);
           setSelectedCompanyId(null);
           queryClient.invalidateQueries({ queryKey: ["companies"] });
-          queryClient.invalidateQueries({ queryKey: ["company", id] }); 
+          queryClient.invalidateQueries({ queryKey: ["company", id] });
         },
         onError: (err: any) => {
-         
           console.error(
             "handleStatusChange: Error changing status:",
             err.message
@@ -222,7 +219,6 @@ export default function Companies() {
     );
     setIsModalOpen(false);
     setInvitationModalOpen(true);
-    
   };
 
   const companyStatusColors = {
@@ -354,7 +350,7 @@ export default function Companies() {
       <InvitationCodeModal
         isOpen={invitationModalOpen}
         onClose={() => setInvitationModalOpen(false)}
-        link="https://your-invite-link.com/abc123" 
+        link="https://your-invite-link.com/abc123"
       />
 
       <DataTableCard<CompanyRow>
