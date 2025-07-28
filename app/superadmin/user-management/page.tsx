@@ -45,15 +45,12 @@ const userStatusColors: Record<string, string> = {
 
 export default function Users() {
   const queryClient = useQueryClient();
-
   const [currentPage, setCurrentPage] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const pageSize = 15;
-
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedUserForModal, setSelectedUserForModal] =
     useState<UserRow | null>(null);
-
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
@@ -82,7 +79,13 @@ export default function Users() {
       const mappedUser: UserRow = {
         id: userDetails._id,
         name: userDetails.name,
-        company: userDetails.company?.name || "N/A",
+        company:
+          typeof userDetails.company === "object" &&
+          userDetails.company !== null
+            ? userDetails.company.name || "N/A"
+            : typeof userDetails.company === "string"
+            ? userDetails.company
+            : "N/A",
         role: userDetails.role,
         email: userDetails.email,
         joinedOn: userDetails.joinedOn,
@@ -125,7 +128,7 @@ export default function Users() {
       ],
     })) || [];
 
-  const totalPages = Math.ceil((usersData?.totalCount || 0) / pageSize);
+  const totalPages = Math.ceil((usersData?.total || 0) / pageSize);
 
   const handleActionClick = (row: UserRow, action: string) => {
     setSelectedUserId(row.id);
@@ -223,7 +226,6 @@ export default function Users() {
         actions: 20,
       };
 
-      // Header
       doc.setFont("helvetica", "bold");
       doc.setFontSize(10);
       doc.setTextColor(255);
@@ -238,20 +240,16 @@ export default function Users() {
       });
       y += 10;
 
-      // Body
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
       doc.setTextColor(0);
 
-      mappedUsers.forEach((user, idx) => {
+      mappedUsers.forEach((user) => {
         x = margin;
         usersColumns.forEach((col) => {
           const w = colWidths[col.key] || 25;
           let val = user[col.key as keyof UserRow] ?? "";
-
-          // No need to check for object or .name
           if (col.key === "actions") val = "View/Edit";
-
           doc.text(String(val), x + 2, y + 6);
           x += w;
         });
@@ -269,10 +267,7 @@ export default function Users() {
         usersColumns
           .map((col) => {
             let val = user[col.key as keyof UserRow] ?? "";
-
-            // Fix company value (it's already string)
             if (col.key === "actions") return `"View/Edit"`;
-
             return `"${val.toString().replace(/"/g, '""')}"`;
           })
           .join(",")
@@ -283,111 +278,111 @@ export default function Users() {
       const ext = format === "Excel" ? "xlsx" : "csv";
       saveAs(blob, `${fileName}.${ext}`);
     }
+  };
 
-    if (isLoadingUsers) {
-      return (
-        <div className="flex justify-center items-center h-screen text-lg font-semibold text-gray-700">
-          Loading users...
-        </div>
-      );
-    }
-
-    if (usersError) {
-      return (
-        <div className="flex flex-col items-center justify-center h-screen text-red-500 text-lg">
-          Error loading users: {usersError.message}
-          <button
-            onClick={() => refetchUsers()}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
-          >
-            Retry
-          </button>
-        </div>
-      );
-    }
-
+  if (isLoadingUsers) {
     return (
-      <div className="flex flex-col gap-6">
-        <UsersHeader
-          onAddUserClick={() => setAddUserOpen(true)}
-          onSearch={(query) => {
-            setSearchQuery(query);
-            setCurrentPage(0);
-          }}
-        />
-
-        <DataTableCard<UserRow>
-          columns={usersColumns}
-          rows={mappedUsers}
-          statusColorMap={userStatusColors}
-          enableActions
-          onActionClick={handleActionClick}
-          isLoading={
-            isLoadingUsers ||
-            isAddingUser ||
-            isUpdatingUser ||
-            isUpdatingUserStatus
-          }
-        />
-
-        <UserDetailsModal
-          isOpen={detailsOpen}
-          onClose={() => {
-            setDetailsOpen(false);
-            setSelectedUserId(null);
-          }}
-          user={selectedUserForModal}
-          onStatusChange={handleStatusChange}
-          isLoading={isLoadingUserDetails || isUpdatingUserStatus}
-        />
-
-        <EditUserModal
-          isOpen={editOpen}
-          onClose={() => {
-            setEditOpen(false);
-            setSelectedUserId(null);
-          }}
-          user={selectedUserForModal}
-          onSave={handleSaveUser}
-          isLoading={isLoadingUserDetails || isUpdatingUser}
-        />
-
-        <ResetPasswordModal
-          isOpen={resetOpen}
-          onClose={() => {
-            setResetOpen(false);
-            setSelectedUserId(null);
-          }}
-          user={selectedUserForModal}
-          onSave={handleSaveUser}
-        />
-
-        <DeactivateCompanyConfirmModal
-          isOpen={confirmDeactivateOpen}
-          onClose={() => setConfirmDeactivateOpen(false)}
-          onConfirm={handleConfirmDeactivate}
-        />
-
-        <AddUserModal
-          isOpen={addUserOpen}
-          onClose={() => setAddUserOpen(false)}
-          onAdd={handleAddUser}
-          isLoading={isAddingUser}
-        />
-
-        <SuccessModal
-          isOpen={successModalOpen}
-          onClose={() => setSuccessModalOpen(false)}
-          message={successMessage}
-        />
-
-        <DashboardFooter
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-          onDownload={handleDownloadList}
-        />
+      <div className="flex justify-center items-center h-screen text-lg font-semibold text-gray-700">
+        Loading users...
       </div>
     );
-  };
+  }
+
+  if (usersError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen text-red-500 text-lg">
+        Error loading users: {usersError.message}
+        <button
+          onClick={() => refetchUsers()}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <UsersHeader
+        onAddUserClick={() => setAddUserOpen(true)}
+        onSearch={(query) => {
+          setSearchQuery(query);
+          setCurrentPage(0);
+        }}
+      />
+
+      <DataTableCard<UserRow>
+        columns={usersColumns}
+        rows={mappedUsers}
+        statusColorMap={userStatusColors}
+        enableActions
+        onActionClick={handleActionClick}
+        isLoading={
+          isLoadingUsers ||
+          isAddingUser ||
+          isUpdatingUser ||
+          isUpdatingUserStatus
+        }
+      />
+
+      <UserDetailsModal
+        isOpen={detailsOpen}
+        onClose={() => {
+          setDetailsOpen(false);
+          setSelectedUserId(null);
+        }}
+        user={selectedUserForModal}
+        onStatusChange={handleStatusChange}
+        isLoading={isLoadingUserDetails || isUpdatingUserStatus}
+      />
+
+      <EditUserModal
+        isOpen={editOpen}
+        onClose={() => {
+          setEditOpen(false);
+          setSelectedUserId(null);
+        }}
+        user={selectedUserForModal}
+        onSave={handleSaveUser}
+        isLoading={isLoadingUserDetails || isUpdatingUser}
+      />
+
+      <ResetPasswordModal
+        isOpen={resetOpen}
+        onClose={() => {
+          setResetOpen(false);
+          setSelectedUserId(null);
+        }}
+        user={selectedUserForModal}
+        onSave={handleSaveUser}
+      />
+
+      <DeactivateCompanyConfirmModal
+        isOpen={confirmDeactivateOpen}
+        onClose={() => setConfirmDeactivateOpen(false)}
+        onConfirm={handleConfirmDeactivate}
+      />
+
+      <AddUserModal
+        isOpen={addUserOpen}
+        onClose={() => setAddUserOpen(false)}
+        onAdd={handleAddUser}
+        isLoading={isAddingUser}
+      />
+
+      <SuccessModal
+        isOpen={successModalOpen}
+        onClose={() => setSuccessModalOpen(false)}
+        message={successMessage}
+      />
+
+      <DashboardFooter
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        onDownload={handleDownloadList}
+      />
+    </div>
+  );
 }
