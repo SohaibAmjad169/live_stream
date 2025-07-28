@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db/dbConnect';
-import Sale from '@/models/Sale';
+import Sale from '@/models/LiveStream';
 import Company from '@/models/Company';
 import User from '@/models/User';
 
