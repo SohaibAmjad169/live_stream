@@ -1,6 +1,6 @@
 // app/api/livestreams/route.ts
 import { connectDB } from "@/lib/db/dbConnect";
-import LiveStream from "@/models/LiveStream";
+import UnifiedSaleStream from "@/models/LiveStream";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     const { streamTitle, date, platform, sales, revenue, profit, status } =
       body;
 
-    const newStream = await LiveStream.create({
+    const newStream = await UnifiedSaleStream.create({
       streamTitle,
       date,
       platform,
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
 export async function GET() {
   try {
     await connectDB();
-    const allStreams = await LiveStream.find().sort({ date: -1 }); // newest first
+    const allStreams = await UnifiedSaleStream.find().sort({ date: -1 }); // newest first
     return NextResponse.json(
       { success: true, data: allStreams },
       { status: 200 }
