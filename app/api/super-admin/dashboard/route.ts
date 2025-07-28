@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db/dbConnect';
-import Sale from '@/models/LiveStream';
+import UnifiedSaleStream from "@/models/LiveStream";
 import Company from '@/models/Company';
 import User from '@/models/User';
 
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
     // === Total Revenue (Approved Sales Only) ===
-    const totalRevenueData = await Sale.aggregate([
+    const totalRevenueData = await UnifiedSaleStream.aggregate([
       { $match: { status: 'approved', createdAt: { $gte: startOfMonth, $lte: endOfMonth } } },
       {
         $group: {
@@ -68,7 +68,7 @@ export async function GET(req: NextRequest) {
     ]);
 
     // === Top Performing Companies ===
-    const topCompaniesAgg = await Sale.aggregate([
+    const topCompaniesAgg = await UnifiedSaleStream.aggregate([
       { $match: { status: 'approved' } },
       {
         $group: {

@@ -20,7 +20,13 @@ export interface IUnifiedSaleStream extends Document {
   profit: number | string;
   user_id?: mongoose.Types.ObjectId;
   sale_id?: mongoose.Types.ObjectId;
-  streamStatus?: "Active" | "Completed" | "draft" | "denied" | "in-review" | "approved";
+  streamStatus?:
+    | "Active"
+    | "Completed"
+    | "draft"
+    | "denied"
+    | "in-review"
+    | "approved";
 
   // From Allsale.ts
   sellerName?: string;
@@ -31,14 +37,26 @@ export interface IUnifiedSaleStream extends Document {
 const UnifiedSaleStreamSchema: Schema = new Schema(
   {
     // From sale.ts
-    companyId: { type: mongoose.Schema.Types.ObjectId, ref: "Company", required: true },
-    sellerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    sellerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    companyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Company",
+      required: true,
+    },
     inventoryItemId: { type: mongoose.Schema.Types.ObjectId, ref: "Inventory" },
     streamId: { type: String },
     price: { type: Number },
     quantity: { type: Number },
     type: { type: String, enum: ["sale", "pyt"], default: "sale" },
-    saleStatus: { type: String, enum: ["pending", "approved"], default: "pending" },
+    saleStatus: {
+      type: String,
+      enum: ["pending", "approved"],
+      default: "pending",
+    },
 
     // From livestream.ts
     streamTitle: { type: String },
@@ -67,4 +85,7 @@ const UnifiedSaleStreamSchema: Schema = new Schema(
 );
 
 export default mongoose.models.UnifiedSaleStream ||
-  mongoose.model<IUnifiedSaleStream>("UnifiedSaleStream", UnifiedSaleStreamSchema);
+  mongoose.model<IUnifiedSaleStream>(
+    "UnifiedSaleStream",
+    UnifiedSaleStreamSchema
+  );
