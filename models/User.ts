@@ -1,5 +1,4 @@
-// models/User.ts
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface IUser extends Document {
   firstName: string;
@@ -8,8 +7,8 @@ export interface IUser extends Document {
   password: string;
   companyName?: string;
   contactEmail?: string;
-  role: "admin" | "user" | "super_admin" | "seller";
-  companyId?: mongoose.Types.ObjectId;
+  role: "seller" | "admin" | "superadmin";
+  companyId?: Types.ObjectId;
 }
 
 const UserSchema = new Schema<IUser>({
@@ -21,11 +20,11 @@ const UserSchema = new Schema<IUser>({
   contactEmail: { type: String },
   role: {
     type: String,
-    enum: ["admin", "user", "super_admin", "seller"],
+    enum: ["seller", "admin", "superadmin"],
     required: true,
   },
   companyId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "Company",
   },
 });

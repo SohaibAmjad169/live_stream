@@ -126,7 +126,7 @@ export async function GET(req: NextRequest) {
 
     const total = await User.countDocuments(filter);
     const users = await User.find(filter)
-      .populate("companyId")
+      .populate({ path: "companyId" })
       .skip((page - 1) * size)
       .limit(size)
       .sort({ createdAt: -1 });
@@ -140,7 +140,7 @@ export async function GET(req: NextRequest) {
       createdAt: user.createdAt,
       company: user.companyId?.name || null,
     }));
-    console.log("data get user", formattedUsers);
+
     return NextResponse.json({
       success: true,
       total,

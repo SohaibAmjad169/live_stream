@@ -7,7 +7,7 @@ import {
   FetchUsersParams,
 } from "../../lib/userAPITypes";
 
-export const fetchUsersApi = async (
+const fetchUsersApi = async (
   params: FetchUsersParams
 ): Promise<FetchUsersResponse> => {
   const authToken = Cookies.get("authToken");
@@ -40,28 +40,14 @@ export const fetchUsersApi = async (
       errorData.message || `Failed to fetch users: ${response.status}`
     );
   }
-
   const result = await response.json();
-
-  if (
-    !result ||
-    !Array.isArray(result.users) ||
-    typeof result.total !== "number"
-  ) {
-    // console.log("All users:", result);
-    throw new Error("Invalid response format from server.");
-  } else {
-    console.log("Fetched users:", result);
-    return result as FetchUsersResponse;
-  }
+  console.log("Fetched users:", result.users);
+  return result as FetchUsersResponse;
 };
 
 export const useUsers = (params: FetchUsersParams) => {
   return useQuery<FetchUsersResponse, Error>({
     queryKey: ["users", params],
     queryFn: () => fetchUsersApi(params),
-    enabled: !!params,
-
-    retry: false,
   });
 };
