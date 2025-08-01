@@ -1,13 +1,29 @@
-import mongoose from 'mongoose';
+// models/Payroll.ts
 
-const payrollSchema = new mongoose.Schema({
-  companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', required: true },
-  sellerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  type: { type: String, enum: ['commission', 'hourly'], required: true },
+import mongoose, { Schema, model, models } from "mongoose";
+
+const payrollSchema = new Schema({
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Company",
+    required: true,
+  },
+  sellerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  type: {
+    type: String,
+    enum: ["hourly", "commission"],
+    required: true,
+  },
   rate: Number,
-  approvedSales: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Sale' }],
-  hoursWorked: Number, 
-  totalPay: Number
-}, { timestamps: true });
+  approvedSales: [{ type: mongoose.Schema.Types.ObjectId, ref: "Sale" }],
+  hoursWorked: Number,
+  totalPay: Number,
+});
 
-export default mongoose.models.Payroll || mongoose.model('Payroll', payrollSchema);
+const Payroll = models.Payroll || model("Payroll", payrollSchema);
+
+export default Payroll;

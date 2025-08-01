@@ -11,10 +11,13 @@ export async function middleware(request: NextRequest) {
       "/api/super_admin/sign-in",
       "/api/admin/sign-in",
       "/api/seller/sign-in",
+      "/api/admin",
+      "/api/seller",
+      "/api/company", 
     ];
 
     if (publicApiPaths.includes(pathname)) {
-      return NextResponse.next();
+      return NextResponse.next(); 
     }
 
     if (pathname.startsWith("/api/super_admin")) {

@@ -6,9 +6,10 @@ import { hash } from "bcrypt";
 export async function POST(req: NextRequest) {
   await connectDB();
 
-  const { name, email, password } = await req.json();
+  const { name, email, password, role } = await req.json();
 
   const exists = await User.findOne({ email });
+
   if (exists) {
     return NextResponse.json(
       { message: "Admin already exists" },
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
     name,
     email,
     password: hashed,
-    role: "admin",
+    role: role,
     companyId: null,
   });
 

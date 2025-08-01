@@ -1,5 +1,5 @@
 import { connectDB } from "@/lib/db/dbConnect";
-import LiveStream from "@/models/LiveStream";
+import UnifiedSaleStream from "@/models/LiveStream";
 import { NextResponse } from "next/server";
 
 export async function GET(
@@ -8,7 +8,7 @@ export async function GET(
 ) {
   try {
     await connectDB();
-    const stream = await LiveStream.findById(params.id);
+    const stream = await UnifiedSaleStream.findById(params.id);
 
     if (!stream) {
       return NextResponse.json(
@@ -34,7 +34,7 @@ export async function PUT(
     await connectDB();
     const body = await req.json();
 
-    const updatedStream = await LiveStream.findByIdAndUpdate(params.id, body, {
+    const updatedStream = await UnifiedSaleStream.findByIdAndUpdate(params.id, body, {
       new: true,
       runValidators: true,
     });
