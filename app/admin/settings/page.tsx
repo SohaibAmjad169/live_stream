@@ -136,32 +136,33 @@ export default function AccountSettings() {
     setTimeout(() => setShowSuccess(false), 1500);
   };
 
-const handleAddEmployee = (emp: Omit<EmployeeRow, "id" | "dropdownActions">) => {
-  const newEmp: EmployeeRow = {
-    ...emp,
-    id: uuidv4(),
-    dropdownActions: ["Edit Employee", "Remove Employee"],
-    name: "",
-    paymentType: "",
-    role: "",
-    rate: "",
-    status: "Active"
+  const handleAddEmployee = (
+    emp: Omit<EmployeeRow, "id" | "dropdownActions">
+  ) => {
+    const newEmp: EmployeeRow = {
+      ...emp,
+      id: uuidv4(),
+      dropdownActions: ["Edit Employee", "Remove Employee"],
+      name: "",
+      paymentType: "",
+      role: "",
+      rate: "",
+      status: "Active",
+    };
+    setEmployees((prev) => [...prev, newEmp]);
   };
-  setEmployees((prev) => [...prev, newEmp]);
-};
 
-const handleEditEmployee = (updated: Employee) => {
-  const updatedRow: EmployeeRow = {
-    ...updated,
-    dropdownActions: ["Edit Employee", "Remove Employee"],
+  const handleEditEmployee = (updated: Employee) => {
+    const updatedRow: EmployeeRow = {
+      ...updated,
+      dropdownActions: ["Edit Employee", "Remove Employee"],
+    };
+    setEmployees((prev) =>
+      prev.map((emp) => (emp.id === updatedRow.id ? updatedRow : emp))
+    );
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 1500);
   };
-  setEmployees((prev) =>
-    prev.map((emp) => (emp.id === updatedRow.id ? updatedRow : emp))
-  );
-  setShowSuccess(true);
-  setTimeout(() => setShowSuccess(false), 1500);
-};
-
 
   const handleChange = (key: string, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));

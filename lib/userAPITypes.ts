@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 export const BASE_URL = "http://localhost:3000";
 
 export interface ApiUser {
@@ -16,15 +18,14 @@ export interface ApiUser {
   purchaseDate?: string;
   expiryDate?: string;
 }
-
 export interface UserRow {
   id: string;
   name: string;
   email: string;
   company: string;
   role: string;
-  joinedOn: string;
-  lastLogin: string;
+  joinedOn?: string;
+  lastLogin?: string;
   status: "Active" | "In-Active";
   phone?: string;
   address?: string;
@@ -32,7 +33,10 @@ export interface UserRow {
   plan?: string;
   purchaseDate?: string;
   expiryDate?: string;
+
   dropdownActions?: string[];
+
+  actions?: string;
 }
 
 export interface AddUserPayload {
@@ -53,7 +57,7 @@ export interface UpdateUserPayload {
   name?: string;
   email?: string;
   password?: string;
-  companyId?: string; 
+  companyId?: string;
   role?: string;
   phone?: string;
   address?: string;
@@ -72,12 +76,13 @@ export interface ApiResponse {
   totalCount?: number;
 }
 
-
 export interface Company {
-  _id: string;
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId;
+    ref: 'Company'; // this must match the name used when exporting the Company model
+  };
   name: string;
 }
-
 
 export interface CompaniesApiResponse {
   success: boolean;
@@ -109,3 +114,17 @@ export interface DashboardApiResponse {
   revenueChartData: DashboardChartData[];
   topCompanies: TopCompany[];
 }
+
+export type FetchUsersParams = {
+  page?: number;
+  size?: number;
+  q?: string;
+};
+
+export type FetchUsersResponse = {
+  users: ApiUser[];
+  total: number;
+  page: number;
+  size: number;
+  totalCount?: number;
+};
